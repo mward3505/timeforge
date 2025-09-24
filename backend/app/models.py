@@ -9,3 +9,10 @@ class Activity(Base):
     tier = Column(String, nullable=False)       # "Main Quest" | "Side Quest" | "Bonus Round" | "Free Play"
     priority = Column(String, nullable=False)   # "High" | "Medium" | "Low"
     estimated_minutes = Column(Integer, nullable=False)
+
+class Availability(Base):
+    __tablename__ = "availability"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False)
+    day_of_week = Column(Integer, nullable=False)  # 0=Monday, 6=Sunday 
+    available_minutes = Column(Integer, nullable=False)
