@@ -10,4 +10,13 @@ class ActivityCreate(BaseModel):
 class ActivityOut(ActivityCreate):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+class AvailabilityUpsert(BaseModel):
+    day_of_week: int  # 0=Monday, 6=Sunday
+    available_minutes: int
+
+class AvailabilityOut(AvailabilityUpsert):
+    id: int
+    class Config:
+        from_attributes = True
