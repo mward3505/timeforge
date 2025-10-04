@@ -11,10 +11,27 @@ type Activity = {
 
 export default function App() {
   const [activities, setActivities] = useState<Activity[]>([]);
+  const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
   const [form, setForm] = useState({ name: "", tier: "Main Quest", priority: "High", estimated_minutes: 30 });
+  const [avail, setAvail] = useState<{ day_of_week: number; available_minutes: number }[]>(
+    Array.from({ length: 7 }, (_, i) => ({ day_of_week: i, available_minutes: 0 }))
+  );
 
   useEffect(() => {
     api.get<Activity[]>("/activities").then(res => setActivities(res.data));
+
+    // effect for availablitiy
+    api.get<{ id: number; day_of_week: number; available_minutes: number }[]>("/availability")
+      .then(res => {
+        const byDay = new Map(res.data.map(r => [r.day_of_week, r.available_minutes]));
+        setAvail(prev =>
+          prev.map(x => ({
+            ...x,
+            available_minutes: byDay.get(x.day_of_week) ?? 0
+          }))
+        );
+      });
   }, []);
 
   const create = async () => {
