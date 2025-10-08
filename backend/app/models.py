@@ -5,6 +5,7 @@ from .database import Base
 class Activity(Base):
     __tablename__ = "activities"
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True, nullable=False)
     name = Column(String, nullable=False)
     tier = Column(String, nullable=False)       # "Main Quest" | "Side Quest" | "Bonus Round" | "Free Play"
     priority = Column(String, nullable=False)   # "High" | "Medium" | "Low"
@@ -13,6 +14,6 @@ class Activity(Base):
 class Availability(Base):
     __tablename__ = "availability"
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, index=True, nullable=False)
     day_of_week = Column(Integer, nullable=False)  # 0=Monday, 6=Sunday 
     available_minutes = Column(Integer, nullable=False)

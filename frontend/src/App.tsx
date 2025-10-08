@@ -17,11 +17,35 @@ export default function App() {
         priority: "",
         estimated_minutes: 0,
     });
+    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const [avail, setAvail] = useState<
+        { day_of_week: number; available_minutes: number }[]
+    >(
+        Array.from({ length: 7 }, (_, i) => ({
+            day_of_week: i,
+            available_minutes: 0,
+        }))
+    );
 
     useEffect(() => {
         api.get<Activity[]>("/activities").then((res) =>
             setActivities(res.data)
         );
+
+        // effect for availability
+        api.get<
+            { id: number; day_of_week: number; available_minutes: number }[]
+        >("/availability").then((res) => {
+            const byDay = new Map(
+                res.data.map((r) => [r.day_of_week, r.available_minutes])
+            );
+            setAvail((prev) =>
+                prev.map((x) => ({
+                    ...x,
+                    available_minutes: byDay.get(x.day_of_week) ?? 0,
+                }))
+            );
+        });
     }, []);
 
     const create = async () => {
@@ -40,6 +64,53 @@ export default function App() {
     return (
         <div style={{ padding: 24, fontFamily: "system-ui, sans-serif" }}>
             <h1>TimeForge MVP</h1>
+
+            <h2>Weekly Availability</h2>
+            <div
+                style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(7, 1fr)",
+                    gap: 8,
+                    maxWidth: 700,
+                }}
+            >
+                {avail.map((row) => (
+                    <div
+                        key={row.day_of_week}
+                        style={{ display: "grid", gap: 6 }}
+                    >
+                        <div style={{ textAlign: "center", fontWeight: 600 }}>
+                            {dayNames[row.day_of_week]}
+                        </div>
+                        <input
+                            type="number"
+                            min={0}
+                            step={15}
+                            value={row.available_minutes}
+                            onChange={(e) => {
+                                const val = Number(e.target.value);
+                                setAvail((curr) =>
+                                    curr.map((x) =>
+                                        x.day_of_week === row.day_of_week
+                                            ? { ...x, available_minutes: val }
+                                            : x
+                                    )
+                                );
+                            }}
+                        />
+                    </div>
+                ))}
+            </div>
+
+            <button
+                style={{ marginTop: 12 }}
+                onClick={async () => {
+                    await api.post("/availability", avail);
+                    alert("Availability saved!");
+                }}
+            >
+                Save Availability
+            </button>
 
             <div
                 style={{
