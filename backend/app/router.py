@@ -18,8 +18,8 @@ def list_activities(db: Session = Depends(get_db)):
     return db.query(models.Activity).all()
 
 @router.post("/activities", response_model=schemas.ActivityOut)
-def create_activity(payload: schemas.ActivityCreate, db: Session = Depends(get_db)):
-    a = models.Activity(**payload.dict())
+def create_activity(payload: schemas.ActivityCreate, db: Session = Depends(get_db), user_id: int = 1):
+    a = models.Activity(user_id=user_id, **payload.dict())
     db.add(a)
     db.commit()
     db.refresh(a)
