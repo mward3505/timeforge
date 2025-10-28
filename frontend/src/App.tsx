@@ -11,6 +11,7 @@ type Activity = {
 
 export default function App() {
     const [activities, setActivities] = useState<Activity[]>([]);
+    const [schedule, setSchedule] = useState<any | null>(null);
     const [form, setForm] = useState({
         name: "",
         tier: "",
@@ -105,11 +106,51 @@ export default function App() {
             <button
                 style={{ marginTop: 12 }}
                 onClick={async () => {
-                    await api.post("/availability", avail);
+                  try {
+                    // Ensure correct data shape
+                    const payload = avail.map(a => ({
+                      day_of_week: a.day_of_week,
+                      available_minutes: a.available_minutes
+                    }));
+
+                    await api.post("/availability", payload);
                     alert("Availability saved!");
+
+                    // Refresh the UI
+                    const res = await api.get<
+                      { id: number; day_of_week: number; available_minutes: number }[]
+                    >("/availability");
+                    const byDay = new Map(
+                      res.data.map((r) => [r.day_of_week, r.available_minutes])
+                    );
+                    setAvail((prev) =>
+                      prev.map((x) => ({
+                        ...x,
+                        available_minutes: byDay.get(x.day_of_week) ?? 0,
+                      }))
+                    );
+                  } catch (err: any) {
+                    console.error("Error saving availability:", err);
+                    alert("Failed to save availability — check console and backend logs.");
+                  }
                 }}
             >
                 Save Availability
+            </button>
+            <button
+                style={{ marginTop: 12 }}
+                onClick={async () => {
+                    try {
+                    const res = await api.get("/schedule/generate?user_id=1");
+                    setSchedule(res.data);
+                    console.log("Generated schedule:", res.data);
+                    } catch (err: any) {
+                    console.error("Error generating schedule:", err);
+                    alert("Could not generate schedule — check backend logs.");
+                    }
+                }}
+                >
+                Generate Schedule
             </button>
 
             <div
@@ -168,6 +209,24 @@ export default function App() {
                     </li>
                 ))}
             </ul>
+            {schedule && (
+                <div style={{ marginTop: 24 }}>
+                    <h2>Today's Schedule</h2>
+                    <p>
+                    Date: {schedule.date} <br />
+                    Available: {schedule.available_minutes}m <br />
+                    Used: {schedule.used_minutes}m
+                    </p>
+
+                    <ul>
+                    {schedule.activities.map((act: any) => (
+                        <li key={act.id}>
+                        {act.name} — {act.tier} ({act.allocated_minutes}m)
+                        </li>
+                    ))}
+                    </ul>
+                </div>
+                )}
         </div>
     );
 }
