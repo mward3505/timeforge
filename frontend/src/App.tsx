@@ -12,6 +12,10 @@ type Activity = {
 export default function App() {
     const [activities, setActivities] = useState<Activity[]>([]);
     const [schedule, setSchedule] = useState<any | null>(null);
+    const [error, setError]= useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [successMsg, setSuccessMsg] = useState<string | null>(null);
+    const [lastGenerated, setLastGenerated] = useState<string | null>(null);
     const [form, setForm] = useState({
         name: "",
         tier: "",
@@ -19,14 +23,20 @@ export default function App() {
         estimated_minutes: 0,
     });
     const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const [avail, setAvail] = useState<
-        { day_of_week: number; available_minutes: number }[]
-    >(
+    const [avail, setAvail] = useState(
         Array.from({ length: 7 }, (_, i) => ({
             day_of_week: i,
-            available_minutes: 0,
+            hours: 0,
+            minutes: 0,
         }))
     );
+
+    const tierColors: Record<string, string> = {
+        "Main Quest": "orange",
+        "Side Quest": "deepskyblue",
+        "Bonus Round": "mediumseagreen",
+        "Free Play": "orchid"
+    };
 
     useEffect(() => {
         api.get<Activity[]>("/activities").then((res) =>
@@ -41,25 +51,61 @@ export default function App() {
                 res.data.map((r) => [r.day_of_week, r.available_minutes])
             );
             setAvail((prev) =>
-                prev.map((x) => ({
-                    ...x,
-                    available_minutes: byDay.get(x.day_of_week) ?? 0,
-                }))
+                prev.map((x) => {
+                    const total = byDay.get(x.day_of_week) ?? 0;
+                    return {
+                        ...x,
+                        hours: Math.floor(total / 60),
+                        minutes: total % 60,
+                    };
+                })
             );
         });
     }, []);
 
     const create = async () => {
         if (!form.name.trim()) return;
-        await api.post<Activity>("/activities", form);
-        const res = await api.get<Activity[]>("/activities");
-        setActivities(res.data);
-        setForm({
+        try {
+          await api.post<Activity>("/activities", form);
+          const res = await api.get<Activity[]>("/activities");
+          setActivities(res.data);
+          setForm({
             name: "",
             tier: "Main Quest",
             priority: "High",
             estimated_minutes: 30,
-        });
+          });
+          setSuccessMsg("Activity added successfully!");
+          setTimeout(() => setSuccessMsg(null), 2000);
+        } catch (err) {
+          console.error("Error adding activity:", err);
+          alert("Failed to add activity — please check your backend.");
+        }
+    };
+
+    // Save/Load schedule handlers
+    const handleSaveSchedule = async () => {
+      if (!schedule) return;
+      try {
+        await api.post("/schedule/save", { ...schedule, user_id: 1 });
+        setSuccessMsg("Schedule saved!");
+        setTimeout(() => setSuccessMsg(null), 2000);
+      } catch (err) {
+        console.error("Error saving schedule:", err);
+        setError("Failed to save schedule.");
+      }
+    };
+
+    const handleLoadSchedule = async () => {
+      try {
+        const res = await api.get("/schedule/load?user_id=1");
+        setSchedule(res.data);
+        setSuccessMsg("Loaded last saved schedule!");
+        setTimeout(() => setSuccessMsg(null), 2000);
+      } catch (err) {
+        console.error("Error loading schedule:", err);
+        setError("Failed to load schedule.");
+      }
     };
 
     return (
@@ -83,22 +129,50 @@ export default function App() {
                         <div style={{ textAlign: "center", fontWeight: 600 }}>
                             {dayNames[row.day_of_week]}
                         </div>
-                        <input
-                            type="number"
-                            min={0}
-                            step={15}
-                            value={row.available_minutes}
-                            onChange={(e) => {
+                        <div style={{ display: "flex", gap: "4px", justifyContent: "center", alignItems: "center" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+                            <input
+                              type="number"
+                              min={0}
+                              max={12}
+                              value={row.hours}
+                              onChange={(e) => {
                                 const val = Number(e.target.value);
                                 setAvail((curr) =>
-                                    curr.map((x) =>
-                                        x.day_of_week === row.day_of_week
-                                            ? { ...x, available_minutes: val }
-                                            : x
-                                    )
+                                  curr.map((x) =>
+                                    x.day_of_week === row.day_of_week
+                                      ? { ...x, hours: val }
+                                      : x
+                                  )
                                 );
-                            }}
-                        />
+                              }}
+                              placeholder="H"
+                              style={{ width: "50px" }}
+                            />
+                            <span style={{ fontSize: "0.9rem", color: "#666" }}>h</span>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+                            <input
+                              type="number"
+                              min={0}
+                              max={59}
+                              value={row.minutes}
+                              onChange={(e) => {
+                                const val = Number(e.target.value);
+                                setAvail((curr) =>
+                                  curr.map((x) =>
+                                    x.day_of_week === row.day_of_week
+                                      ? { ...x, minutes: val }
+                                      : x
+                                  )
+                                );
+                              }}
+                              placeholder="M"
+                              style={{ width: "50px" }}
+                            />
+                            <span style={{ fontSize: "0.9rem", color: "#666" }}>m</span>
+                          </div>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -110,7 +184,7 @@ export default function App() {
                     // Ensure correct data shape
                     const payload = avail.map(a => ({
                       day_of_week: a.day_of_week,
-                      available_minutes: a.available_minutes
+                      available_minutes: a.hours * 60 + a.minutes
                     }));
 
                     await api.post("/availability", payload);
@@ -124,10 +198,14 @@ export default function App() {
                       res.data.map((r) => [r.day_of_week, r.available_minutes])
                     );
                     setAvail((prev) =>
-                      prev.map((x) => ({
-                        ...x,
-                        available_minutes: byDay.get(x.day_of_week) ?? 0,
-                      }))
+                      prev.map((x) => {
+                        const total = byDay.get(x.day_of_week) ?? 0;
+                        return {
+                          ...x,
+                          hours: Math.floor(total / 60),
+                          minutes: total % 60,
+                        };
+                      })
                     );
                   } catch (err: any) {
                     console.error("Error saving availability:", err);
@@ -141,17 +219,69 @@ export default function App() {
                 style={{ marginTop: 12 }}
                 onClick={async () => {
                     try {
-                    const res = await api.get("/schedule/generate?user_id=1");
-                    setSchedule(res.data);
-                    console.log("Generated schedule:", res.data);
+                        setError(null);
+                        setLoading(true);
+                        const res = await api.get("/schedule/generate?user_id=1");
+                        setSchedule(res.data);
+                        const now = new Date();
+                        setLastGenerated(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
                     } catch (err: any) {
-                    console.error("Error generating schedule:", err);
-                    alert("Could not generate schedule — check backend logs.");
+                        if (err.response?.status === 404) {
+                        setError("You haven’t set your availability for today.");
+                        } else {
+                        setError("Something went wrong while generating your schedule.");
+                        }
+                    } finally {
+                        setLoading(false);
                     }
                 }}
                 >
-                Generate Schedule
+                {loading ? "Generating..." : "Generate Schedule"}
             </button>
+            <button
+              style={{ marginTop: 12, marginLeft: 8 }}
+              onClick={() => {
+                setSchedule(null);
+                setError(null);
+                setLastGenerated(null);
+              }}
+            >
+              Clear Schedule
+            </button>
+            <button
+              style={{ marginTop: 12, marginLeft: 8 }}
+              onClick={async () => {
+                try {
+                  setError(null);
+                  setLoading(true);
+                  const res = await api.get("/schedule/generate?user_id=1");
+                  setSchedule(res.data);
+                  const now = new Date();
+                  setLastGenerated(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                } catch (err: any) {
+                  console.error("Error regenerating schedule:", err);
+                  setError("Failed to regenerate schedule.");
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            >
+              {loading ? "Regenerating..." : "Regenerate Schedule"}
+            </button>
+            {/* New Save/Load buttons */}
+            <button
+              style={{ marginTop: 12, marginLeft: 8 }}
+              onClick={handleSaveSchedule}
+            >
+              Save Schedule
+            </button>
+            <button
+              style={{ marginTop: 12, marginLeft: 8 }}
+              onClick={handleLoadSchedule}
+            >
+              Load Last Schedule
+            </button>
+            {error && <p style={{ color: "tomato" }}>{error}</p>}
 
             <div
                 style={{
@@ -201,6 +331,7 @@ export default function App() {
                 <button onClick={create}>Add Activity</button>
             </div>
 
+            {successMsg && <p style={{ color: "limegreen" }}>{successMsg}</p>}
             <ul style={{ paddingLeft: 16 }}>
                 {activities.map((a) => (
                     <li key={a.id}>
@@ -218,13 +349,38 @@ export default function App() {
                     Used: {schedule.used_minutes}m
                     </p>
 
-                    <ul>
-                    {schedule.activities.map((act: any) => (
-                        <li key={act.id}>
-                        {act.name} — {act.tier} ({act.allocated_minutes}m)
-                        </li>
-                    ))}
-                    </ul>
+                    <div style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                      gap: 12,
+                      marginTop: 16
+                    }}>
+                      {schedule.activities.map((act: any) => (
+                        <div
+                          key={act.id}
+                          style={{
+                            backgroundColor: tierColors[act.tier] || "#333",
+                            color: "white",
+                            padding: "12px",
+                            borderRadius: "8px",
+                            boxShadow: "0 2px 6px rgba(0,0,0,0.15)"
+                          }}
+                        >
+                          <h3 style={{ margin: "0 0 6px 0", fontSize: "1.1rem" }}>
+                            {act.name}
+                          </h3>
+                          <p style={{ margin: 0 }}>
+                            <strong>{act.tier}</strong> • {act.priority ?? "N/A"} <br />
+                            ⏱ {act.allocated_minutes} minutes
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    {lastGenerated && (
+                      <p style={{ color: "#888" }}>
+                        Last generated at {lastGenerated}
+                      </p>
+                    )}
                 </div>
                 )}
         </div>

@@ -1,5 +1,5 @@
 # app/models.py
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Text
 from .database import Base
 
 class Activity(Base):
@@ -17,3 +17,14 @@ class Availability(Base):
     user_id = Column(Integer, index=True, nullable=False)
     day_of_week = Column(Integer, nullable=False)  # 0=Monday, 6=Sunday 
     available_minutes = Column(Integer, nullable=False)
+
+class Schedule(Base):
+    __tablename__ = "schedules"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False)
+    date = Column(String, nullable=False)
+    day_of_week = Column(Integer, nullable=False)
+    available_minutes = Column(Integer, nullable=False)
+    used_minutes = Column(Integer, nullable=False)
+    activities_json = Column(Text, nullable=False)  # store list of activities as JSON

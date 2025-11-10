@@ -1,6 +1,6 @@
 # app/schemas.py
 from pydantic import BaseModel
-from typing import List
+from typing import List, Any
 
 class ActivityCreate(BaseModel):
     name: str
@@ -32,9 +32,22 @@ class ScheduleActivity(BaseModel):
     class Config:
         from_attributes = True
 
-class ScheduleOut(BaseModel):
+class GenerateScheduleOut(BaseModel):
     date: str
     day_of_week: int
     available_minutes: int
     used_minutes: int
     activities: List[ScheduleActivity]
+
+class SavedScheduleIn(BaseModel):
+    user_id: int
+    date: str
+    day_of_week: int
+    available_minutes: int
+    used_minutes: int
+    activities: List[Any]
+
+class SavedScheduleOut(SavedScheduleIn):
+    id: int
+    class Config:
+        from_attributes = True

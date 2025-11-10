@@ -12,3 +12,9 @@ export type AvailabilityUpsert = { day_of_week: number; available_minutes: numbe
 export const listAvailability = () => api.get<Availability[]>("/availability");
 export const saveAvailability = (rows: AvailabilityUpsert[]) =>
     api.post<Availability[]>("/availability", rows);
+
+export const saveSchedule = (schedule: any) =>
+    api.post("/schedule/save", schedule);
+
+export const loadScheďule = (userID: number) =>
+    api.get(`/schedule/load?user_id=${userID}`);
