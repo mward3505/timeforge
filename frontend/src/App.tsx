@@ -38,6 +38,21 @@ export default function App() {
         "Free Play": "orchid"
     };
 
+    const priorityOrder: Record<string, number> = { High: 3, Medium: 2, Low: 1 };
+
+    const priorityIcons: Record<string, string> = {
+      High: "🔥",
+      Medium: "⭐",
+      Low: "⬤"
+    };
+
+    const tierIcons: Record<string, string> = {
+      "Main Quest": "⚔️",
+      "Side Quest": "🎒",
+      "Bonus Round": "🎁",
+      "Free Play": "🧘"
+    }
+
     useEffect(() => {
         api.get<Activity[]>("/activities").then((res) =>
             setActivities(res.data)
@@ -106,6 +121,12 @@ export default function App() {
         console.error("Error loading schedule:", err);
         setError("Failed to load schedule.");
       }
+    };
+
+    const formatMinutes = (mins: number) => {
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        return h > 0 ? `${h}h ${m}m` : `${m}m`;
     };
 
     return (
@@ -345,8 +366,8 @@ export default function App() {
                     <h2>Today's Schedule</h2>
                     <p>
                     Date: {schedule.date} <br />
-                    Available: {schedule.available_minutes}m <br />
-                    Used: {schedule.used_minutes}m
+                    Available: {formatMinutes(schedule.available_minutes)} <br />
+                    Used: {formatMinutes(schedule.used_minutes)}
                     </p>
 
                     <div style={{
@@ -355,26 +376,34 @@ export default function App() {
                       gap: 12,
                       marginTop: 16
                     }}>
-                      {schedule.activities.map((act: any) => (
-                        <div
-                          key={act.id}
-                          style={{
-                            backgroundColor: tierColors[act.tier] || "#333",
-                            color: "white",
-                            padding: "12px",
-                            borderRadius: "8px",
-                            boxShadow: "0 2px 6px rgba(0,0,0,0.15)"
-                          }}
-                        >
-                          <h3 style={{ margin: "0 0 6px 0", fontSize: "1.1rem" }}>
-                            {act.name}
-                          </h3>
-                          <p style={{ margin: 0 }}>
-                            <strong>{act.tier}</strong> • {act.priority ?? "N/A"} <br />
-                            ⏱ {act.allocated_minutes} minutes
-                          </p>
-                        </div>
-                      ))}
+                      {(() => {
+                        
+                        const sortedActivities = [...schedule.activities].sort((a, b) => {
+                            const pDiff = (priorityOrder[b.priority] ?? 0) - (priorityOrder[a.priority] ?? 0);
+                            if (pDiff !== 0) return pDiff;
+                            return (b.allocated_minutes ?? 0) - (a.allocated_minutes ?? 0);
+                        });
+                        return sortedActivities.map((act: any) => (
+                          <div
+                            key={act.id}
+                            style={{
+                              backgroundColor: tierColors[act.tier] || "#333",
+                              color: "white",
+                              padding: "12px",
+                              borderRadius: "8px",
+                              boxShadow: "0 2px 6px rgba(0,0,0,0.15)"
+                            }}
+                          > 
+                            <h3 style={{ margin: "0 0 6px 0", fontSize: "1.1rem" }}>
+                              {act.name}
+                            </h3>
+                            <p style={{ margin: 0 }}>
+                              <strong>{act.tier}</strong> • {act.priority ?? "N/A"} <br />
+                              ⏱ {formatMinutes(act.allocated_minutes)}
+                            </p>
+                          </div>
+                        ));
+                      })()}
                     </div>
                     {lastGenerated && (
                       <p style={{ color: "#888" }}>
