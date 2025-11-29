@@ -356,8 +356,9 @@ export default function App() {
             <ul style={{ paddingLeft: 16 }}>
                 {activities.map((a) => (
                     <li key={a.id}>
-                        {a.name} — {a.tier} / {a.priority} (
-                        {a.estimated_minutes}m)
+                      {a.name} — {tierIcons[a.tier]} {a.tier} /
+                      {priorityIcons[a.priority]} {a.priority}
+                      ({formatMinutes(a.estimated_minutes)})
                     </li>
                 ))}
             </ul>
