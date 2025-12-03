@@ -367,11 +367,16 @@ export default function App() {
                     marginBottom: 24,
                 }}
             >
+                {/* Activity Name */}
+                <label style={{ fontWeight: 600 }}>Activity Name</label>
                 <input
-                    placeholder="Activity name"
+                    placeholder="Enter activity name"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                 />
+
+                {/* Tier */}
+                <label style={{ fontWeight: 600 }}>Tier</label>
                 <select
                     value={form.tier}
                     onChange={(e) => setForm({ ...form, tier: e.target.value })}
@@ -382,56 +387,61 @@ export default function App() {
                     <option>Bonus Round</option>
                     <option>Free Play</option>
                 </select>
+
+                {/* Priority */}
+                <label style={{ fontWeight: 600 }}>Priority</label>
                 <select
                     value={form.priority}
-                    onChange={(e) =>
-                        setForm({ ...form, priority: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, priority: e.target.value })}
                 >
                     <option>High</option>
                     <option>Medium</option>
                     <option>Low</option>
                 </select>
-                <div style={{ display: "flex", gap: "6px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                    <input
-                      type="number"
-                      min={0}
-                      max={12}
-                      value={form.estimated_hours}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          estimated_hours: Number(e.target.value),
-                        })
-                      }
-                      style={{ width: "60px" }}
-                      placeholder="H"
-                    />
-                    <span style={{ fontSize: "0.9rem", color: "#666" }}>h</span>
-                  </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                    <input
-                      type="number"
-                      min={0}
-                      max={59}
-                      value={form.estimated_minutes}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          estimated_minutes: Number(e.target.value),
-                        })
-                      }
-                      style={{ width: "60px" }}
-                      placeholder="M"
-                    />
-                    <span style={{ fontSize: "0.9rem", color: "#666" }}>m</span>
-                  </div>
+                {/* Estimated Time */}
+                <label style={{ fontWeight: 600 }}>Estimated Time</label>
+                <div style={{ display: "flex", gap: "6px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        <input
+                            type="number"
+                            min={0}
+                            max={12}
+                            value={form.estimated_hours}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    estimated_hours: Number(e.target.value),
+                                })
+                            }
+                            style={{ width: "60px" }}
+                            placeholder="H"
+                        />
+                        <span style={{ fontSize: "0.9rem", color: "#666" }}>hours</span>
+                    </div>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        <input
+                            type="number"
+                            min={0}
+                            max={59}
+                            value={form.estimated_minutes}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    estimated_minutes: Number(e.target.value),
+                                })
+                            }
+                            style={{ width: "60px" }}
+                            placeholder="M"
+                        />
+                        <span style={{ fontSize: "0.9rem", color: "#666" }}>minutes</span>
+                    </div>
                 </div>
+
                 <button onClick={create}>Add Activity</button>
 
-				{error && <p style={{ color: "tomato" }}>{error}</p>}
+                {error && <p style={{ color: "tomato" }}>{error}</p>}
             </div>
 
             {successMsg && <p style={{ color: "limegreen" }}>{successMsg}</p>}
