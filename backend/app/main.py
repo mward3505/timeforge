@@ -9,13 +9,17 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="TimeForge API (MVP)")
 
+origins = [
+    "http://localhost:5173",              # local Vite dev
+    "https://timeforge-mvp.netlify.app", # deployed frontend
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    origins = "*",
 )
 
 @app.get("/")
