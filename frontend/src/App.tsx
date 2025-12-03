@@ -55,6 +55,20 @@ export default function App() {
     }
 
     useEffect(() => {
+        // TEMPORARY FOR MVP DEMO:
+        // Clear backend data on page load so the app always starts empty.
+        const resetData = async () => {
+            try {
+                await api.delete("/activities/clear");
+                await api.delete("/availability/clear");
+                console.log("Backend reset — fresh start.");
+            } catch (err) {
+                console.error("Failed to reset backend:", err);
+            }
+        };
+
+        resetData();
+
         api.get<Activity[]>("/activities").then((res) =>
             setActivities(res.data)
         );
