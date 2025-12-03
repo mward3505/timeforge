@@ -20,7 +20,8 @@ export default function App() {
         name: "",
         tier: "",
         priority: "",
-        estimated_minutes: 0,
+        estimated_hours: 0,
+        estimated_minutes: 30,
     });
     const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const [avail, setAvail] = useState(
@@ -78,25 +79,57 @@ export default function App() {
         });
     }, []);
 
+	const validateForm = () => {
+		if (!form.name.trim()) return "Name is required.";
+		if (!form.tier || form.tier === "Select option") return "Choose a tier.";
+		if (!form.priority) return "Choose a priority.";
+		
+		const totalMinutes = form.estimated_hours * 60 + form.estimated_minutes;
+		if (totalMinutes < 5) return "Duration must be at least 5 minutes.";
+	
+		return null;
+	};
+
     const create = async () => {
-        if (!form.name.trim()) return;
-        try {
-          await api.post<Activity>("/activities", form);
-          const res = await api.get<Activity[]>("/activities");
-          setActivities(res.data);
-          setForm({
-            name: "",
-            tier: "Main Quest",
-            priority: "High",
-            estimated_minutes: 30,
-          });
-          setSuccessMsg("Activity added successfully!");
-          setTimeout(() => setSuccessMsg(null), 2000);
-        } catch (err) {
-          console.error("Error adding activity:", err);
-          alert("Failed to add activity — please check your backend.");
-        }
-    };
+		const validationError = validateForm();
+		if (validationError) {
+			setError(validationError);
+			return;
+		}
+		setError(null);
+
+		if (!form.name.trim()) return;
+
+		// Convert to total minutes
+		const totalMinutes =
+			form.estimated_hours * 60 + form.estimated_minutes;
+		try {
+		await api.post<Activity>("/activities", {
+			name: form.name,
+			tier: form.tier,
+			priority: form.priority,
+			estimated_minutes: totalMinutes,
+			user_id: 1
+		});
+
+		const res = await api.get<Activity[]>("/activities");
+		setActivities(res.data);
+
+		setForm({
+			name: "",
+			tier: "Main Quest",
+			priority: "High",
+			estimated_hours: 0,
+			estimated_minutes: 30,
+		});
+
+		setSuccessMsg("Activity added successfully!");
+		setTimeout(() => setSuccessMsg(null), 2000);
+		} catch (err) {
+		console.error("Error adding activity:", err);
+		alert("Failed to add activity — please check your backend.");
+		}
+  };
 
     // Save/Load schedule handlers
     const handleSaveSchedule = async () => {
@@ -337,19 +370,46 @@ export default function App() {
                     <option>Medium</option>
                     <option>Low</option>
                 </select>
-                <input
-                    type="number"
-                    min={5}
-                    step={5}
-                    value={form.estimated_minutes}
-                    onChange={(e) =>
+                <div style={{ display: "flex", gap: "6px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                    <input
+                      type="number"
+                      min={0}
+                      max={12}
+                      value={form.estimated_hours}
+                      onChange={(e) =>
                         setForm({
-                            ...form,
-                            estimated_minutes: Number(e.target.value),
+                          ...form,
+                          estimated_hours: Number(e.target.value),
                         })
-                    }
-                />
+                      }
+                      style={{ width: "60px" }}
+                      placeholder="H"
+                    />
+                    <span style={{ fontSize: "0.9rem", color: "#666" }}>h</span>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                    <input
+                      type="number"
+                      min={0}
+                      max={59}
+                      value={form.estimated_minutes}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          estimated_minutes: Number(e.target.value),
+                        })
+                      }
+                      style={{ width: "60px" }}
+                      placeholder="M"
+                    />
+                    <span style={{ fontSize: "0.9rem", color: "#666" }}>m</span>
+                  </div>
+                </div>
                 <button onClick={create}>Add Activity</button>
+
+				{error && <p style={{ color: "tomato" }}>{error}</p>}
             </div>
 
             {successMsg && <p style={{ color: "limegreen" }}>{successMsg}</p>}
