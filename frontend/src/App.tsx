@@ -55,9 +55,8 @@ export default function App() {
     }
 
     useEffect(() => {
-        // TEMPORARY FOR MVP DEMO:
-        // Clear backend data on page load so the app always starts empty.
-        const resetData = async () => {
+        const load = async () => {
+            // Reset backend first so fresh data is guaranteed
             try {
                 await api.delete("/activities/clear");
                 await api.delete("/availability/clear");
@@ -65,32 +64,41 @@ export default function App() {
             } catch (err) {
                 console.error("Failed to reset backend:", err);
             }
+
+            // Now fetch activities
+            try {
+                const actRes = await api.get<Activity[]>("/activities");
+                setActivities(actRes.data);
+            } catch (err) {
+                console.error("Failed to load activities:", err);
+            }
+
+            // Now fetch availability
+            try {
+                const availRes = await api.get<
+                    { id: number; day_of_week: number; available_minutes: number }[]
+                >("/availability");
+
+                const byDay = new Map(
+                    availRes.data.map(r => [r.day_of_week, r.available_minutes])
+                );
+
+                setAvail(prev =>
+                    prev.map(x => {
+                        const total = byDay.get(x.day_of_week) ?? 0;
+                        return {
+                            ...x,
+                            hours: Math.floor(total / 60),
+                            minutes: total % 60,
+                        };
+                    })
+                );
+            } catch (err) {
+                console.error("Failed to load availability:", err);
+            }
         };
 
-        resetData();
-
-        api.get<Activity[]>("/activities").then((res) =>
-            setActivities(res.data)
-        );
-
-        // effect for availability
-        api.get<
-            { id: number; day_of_week: number; available_minutes: number }[]
-        >("/availability").then((res) => {
-            const byDay = new Map(
-                res.data.map((r) => [r.day_of_week, r.available_minutes])
-            );
-            setAvail((prev) =>
-                prev.map((x) => {
-                    const total = byDay.get(x.day_of_week) ?? 0;
-                    return {
-                        ...x,
-                        hours: Math.floor(total / 60),
-                        minutes: total % 60,
-                    };
-                })
-            );
-        });
+        load();
     }, []);
 
 	const validateForm = () => {
