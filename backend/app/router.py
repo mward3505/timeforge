@@ -34,19 +34,6 @@ def list_availability(db: Session = Depends(get_db), user_id: int = 1):
         .all()
     )
 
-@router.delete("/activities/clear")
-def clear_activities(db: Session = Depends(get_db)):
-    db.query(models.Activity).delete()
-    db.commit()
-    return {"status": "ok"}
-
-
-@router.delete("/availability/clear")
-def clear_availability(db: Session = Depends(get_db)):
-    db.query(models.Availability).delete()
-    db.commit()
-    return {"status": "ok"}
-
 @router.post("/availability", response_model=list[schemas.AvailabilityOut])
 def upsert_availability(
     payload: list[schemas.AvailabilityUpsert],
@@ -69,7 +56,7 @@ def upsert_availability(
             # Insert new row
             row = models.Availability(user_id=user_id, **item.dict())
             db.add(row)
-        db.flush() # Prepare the row for use before commit
+        db.flush() # Prepare teh row for use before commit
         result.append(row)
 
     db.commit()
