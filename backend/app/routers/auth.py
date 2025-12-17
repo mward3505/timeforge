@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from ..database import SessionLocal
 from .. import models, schemas
 from ..auth import hash_password, verify_password
+from ..jwt import create_access_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -36,3 +37,23 @@ def register_user(
     db.refresh(user)
 
     return user
+
+@router.post("/login", response_model=schemas.Token)
+def login_user(
+    payload: schemas.UserLogin,
+    db: Session = Depends(get_db),
+):
+    user = db.query(models.User).filter_by(email=payload.email).first()
+    
+    if not user or not verify_password(payload.password, str(user.password_hash)):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password",
+        )
+    
+    access_token = create_access_token(data={"sub": str(user.id)})
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+    }
