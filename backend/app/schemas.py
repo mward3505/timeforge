@@ -26,7 +26,7 @@ class ScheduleActivity(BaseModel):
     id: int
     name: str
     tier: str
-    prioirity: str
+    priority: str
     allocated_minutes: int
 
     class Config:
@@ -70,3 +70,14 @@ class UserOut(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str= "bearer"
+
+class ScheduleItem(BaseModel):
+    name: str
+    estimated_minutes: int
+
+class ScheduleSaveRequest(BaseModel):
+    date: str # YYYY-MM-DD
+    available_minutes: int
+    used_minutes: int
+    day_of_week: int
+    activities: List[ScheduleItem]
