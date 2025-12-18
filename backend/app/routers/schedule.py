@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime
+import json
+
 from .. import models
 from ..router import get_db
 from ..schemas import GenerateScheduleOut, SavedScheduleOut, SavedScheduleIn
-import json
+from ..dependencies import get_current_user
 
 router = APIRouter()
 
@@ -51,7 +53,7 @@ def generate_schedule(db: Session = Depends(get_db), user_id: int = 1):
                 "id": a.id,
                 "name": a.name,
                 "tier": a.tier,
-                "prioirity": a.priority,
+                "priority": a.priority,
                 "allocated_minutes": a.estimated_minutes
             })
             used += a.estimated_minutes
@@ -71,21 +73,39 @@ def generate_schedule(db: Session = Depends(get_db), user_id: int = 1):
         "activities": plan
     }
 
+@router.post("/schedule/save")
+def save_schedule(
+    payload: SavedScheduleIn,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    import json
 
-@router.post("/schedule/save", status_code=status.HTTP_201_CREATED)
-def save_schedule(data: SavedScheduleIn, db: Session = Depends(get_db)):
-    db_schedule = models.Schedule(
-        user_id=data.user_id,
-        date=data.date,
-        day_of_week=data.day_of_week,
-        available_minutes=data.available_minutes,
-        used_minutes=data.used_minutes,
-        activities_json=json.dumps(data.activities)
+    existing = (
+        db.query(models.Schedule)
+        .filter(models.Schedule.user_id == current_user.id)
+        .filter(models.Schedule.date == payload.date)
+        .first()
     )
-    db.add(db_schedule)
+
+    if existing:
+        existing.available_minutes = payload.available_minutes
+        existing.used_minutes = payload.used_minutes
+        existing.day_of_week = payload.day_of_week
+        existing.activities_json = json.dumps(payload.activities)
+    else:
+        schedule = models.Schedule(
+            user_id=current_user.id,
+            date=payload.date,
+            day_of_week=payload.day_of_week,
+            available_minutes=payload.available_minutes,
+            used_minutes=payload.used_minutes,
+            activities_json=json.dumps([a.model_dump() for a in payload.activities]),
+        )
+        db.add(schedule)
+
     db.commit()
-    db.refresh(db_schedule)
-    return {"message": "Schedule saved", "id": db_schedule.id}
+    return {"status": "success"}
 
 
 @router.get("/schedule/load", response_model=SavedScheduleOut)
@@ -109,3 +129,47 @@ def load_schedule(user_id: int, db: Session = Depends(get_db)):
         "used_minutes": sched.used_minutes,
         "activities": data
     }
+
+@router.get("/schedule/today", response_model=SavedScheduleOut)
+def get_today_schedule(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    today = datetime.now().strftime("%Y-%m-%d")
+    day_of_week = datetime.now().weekday()
+
+    # Check for saved schedule first
+    sched = (
+        db.query(models.Schedule)
+        .filter(models.Schedule.user_id == current_user.id)
+        .filter(models.Schedule.date == today)
+        .first()
+    )
+
+    if sched:
+        return {
+            "id": sched.id,
+            "user_id": sched.user_id,
+            "date": sched.date,
+            "day_of_week": sched.day_of_week,
+            "available_minutes": sched.available_minutes,
+            "used_minutes": sched.used_minutes,
+            "activities": json.loads(sched.activities_json),
+        }
+
+    # Otherwise: auto-generate using the existing logic
+    result = generate_schedule(db, user_id=current_user.id)
+
+    # Save it automatically
+    schedule = models.Schedule(
+        user_id=current_user.id,
+        date=result["date"],
+        day_of_week=result["day_of_week"],
+        available_minutes=result["available_minutes"],
+        used_minutes=result["used_minutes"],
+        activities_json=json.dumps(result["activities"]),
+    )
+    db.add(schedule)
+    db.commit()
+
+    return schedule

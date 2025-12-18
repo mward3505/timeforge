@@ -40,12 +40,11 @@ class GenerateScheduleOut(BaseModel):
     activities: List[ScheduleActivity]
 
 class SavedScheduleIn(BaseModel):
-    user_id: int
     date: str
     day_of_week: int
     available_minutes: int
     used_minutes: int
-    activities: List[Any]
+    activities: list[ScheduleActivity]
 
 class SavedScheduleOut(SavedScheduleIn):
     id: int
