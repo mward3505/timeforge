@@ -5,7 +5,8 @@ import "./index.css";
 
 import App from "./App.tsx";
 import LandingPage from "./LandingPage.tsx";
-import Dashboard from "./Dashboard.tsx"; // ⭐ you will create or already have this
+import Dashboard from "./Dashboard.tsx";
+import LoginPage from "./pages/LoginPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
@@ -13,6 +14,9 @@ createRoot(document.getElementById("root")!).render(
 			<Routes>
 				{/* Landing page */}
 				<Route path="/" element={<LandingPage />} />
+
+				{/* Login page */}
+				<Route path="/login" element={<LoginPage />} />
 
 				{/* Authenticated main UI */}
 				<Route path="/dashboard" element={<Dashboard />} />
