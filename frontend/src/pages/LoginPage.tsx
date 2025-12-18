@@ -16,6 +16,7 @@ export default function LoginPage() {
 		try {
 			const res = await fetch("http://localhost:8000/auth/login", {
 				method: "POST",
+				credentials: "include",
 				headers: {
 					"Content-Type": "application/json",
 				},
@@ -25,11 +26,6 @@ export default function LoginPage() {
 			if (!res.ok) {
 				throw new Error("Invalid login");
 			}
-
-			const data = await res.json();
-
-			// Save token
-			localStorage.setItem("token", data.access_token);
 
 			// Go to dashboard
 			navigate("/dashboard");
