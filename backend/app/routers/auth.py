@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from ..database import SessionLocal
@@ -97,3 +98,10 @@ def login_user(
     )
 
     return {"success": True}
+
+@router.post("/logout")
+def logout():
+    response = JSONResponse({"success": True})
+    response.delete_cookie("access_token", path="/")
+
+    return response
