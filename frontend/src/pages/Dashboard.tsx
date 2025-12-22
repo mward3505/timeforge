@@ -13,7 +13,7 @@ type Activity = {
 
 export default function App() {
     const [activities, setActivities] = useState<Activity[]>([]);
-    const { user, loading } = useAuth();
+    const { user, loading, logout } = useAuth();
     const [schedule, setSchedule] = useState<any | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -206,8 +206,7 @@ export default function App() {
             <h1>TimeForge MVP</h1>
             <button
                 onClick={async () => {
-                    await api.post("/auth/logout");
-                    window.location.href = "/login";
+                    await logout();
                 }}
             >
                 Logout
