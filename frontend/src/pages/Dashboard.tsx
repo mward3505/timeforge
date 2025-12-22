@@ -8,6 +8,7 @@ import {
 import { api } from "../api";
 import { useAuth } from "../context/AuthContext";
 import { Navigate, useNavigate } from "react-router-dom";
+import WeeklyAvailabilityCard from "@/components/dashboard/WeeklyAvailabilityCard";
 
 type Activity = {
 	id: number;
@@ -68,8 +69,15 @@ export default function App() {
 		"Free Play": "🧘",
 	};
 
-	if (loading) return <div> Loading user...</div>;
-	if (!user) return <Navigate to="/login" replace />;
+	if (loading) {
+		return <div className="text-zinc-400 p-6">Loading...</div>;
+	}
+
+	if (!user) {
+		return <Navigate to="/login" replace />;
+	}
+	// if (loading) return <div> Loading user...</div>;
+	// if (!user) return <Navigate to="/login" replace />;
 
 	useEffect(() => {
 		const load = async () => {
@@ -227,75 +235,7 @@ export default function App() {
 				</CardHeader>
 			</Card>
 
-			<Card className="bg-zinc-900 border-zinc-800 text-zinc-100">
-				<CardHeader>
-					<CardTitle className="text-zinc-50">
-						Weekly Availability
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="grid grid-cols-7 gap-4">
-						{avail.map((row) => (
-							<div
-								key={row.day_of_week}
-								className="space-y-2 text-center"
-							>
-								<div className="font-semibold">
-									{dayNames[row.day_of_week]}
-								</div>
-
-								<div className="flex justify-center gap-1">
-									<input
-										type="number"
-										min={0}
-										max={12}
-										value={row.hours}
-										onChange={(e) => {
-											const val = Number(e.target.value);
-											setAvail((curr) =>
-												curr.map((x) =>
-													x.day_of_week ===
-													row.day_of_week
-														? { ...x, hours: val }
-														: x
-												)
-											);
-										}}
-										className="w-14 bg-zinc-800 text-zinc-100 placeholder:text-zinc-500 border border-zinc-700 rounded text-center focus:outline-none focus:ring-2 focus:ring-zinc-600"
-									/>
-									<span className="text-sm text-zinc-400 self-center">
-										h
-									</span>
-								</div>
-
-								<div className="flex justify-center gap-1">
-									<input
-										type="number"
-										min={0}
-										max={59}
-										value={row.minutes}
-										onChange={(e) => {
-											const val = Number(e.target.value);
-											setAvail((curr) =>
-												curr.map((x) =>
-													x.day_of_week ===
-													row.day_of_week
-														? { ...x, minutes: val }
-														: x
-												)
-											);
-										}}
-										className="w-14 bg-zinc-800 text-zinc-100 placeholder:text-zinc-500 border border-zinc-700 rounded text-center focus:outline-none focus:ring-2 focus:ring-zinc-600"
-									/>
-									<span className="text-sm text-zinc-400 self-center">
-										m
-									</span>
-								</div>
-							</div>
-						))}
-					</div>
-				</CardContent>
-			</Card>
+			<WeeklyAvailabilityCard avail={avail} setAvail={setAvail} />
 
 			<button
 				className="px-4 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 transition"
