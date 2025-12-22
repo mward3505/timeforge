@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
 	const navigate = useNavigate();
+
+	const { refreshUser } = useAuth();
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -26,6 +29,8 @@ export default function LoginPage() {
 			if (!res.ok) {
 				throw new Error("Invalid login");
 			}
+
+			await refreshUser();
 
 			// Go to dashboard
 			navigate("/dashboard");
