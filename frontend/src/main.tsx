@@ -8,22 +8,27 @@ import LandingPage from "./pages/LandingPage.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import { AuthProvider } from "./context/AuthContext.tsx";
+import ProtectedRoute from "./components/auth/ProtectedRoute.tsx";
+import SignupPage from "./pages/SignupPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
-	<StrictMode>
-		<AuthProvider>
-			<BrowserRouter>
-				<Routes>
-					{/* Landing page */}
-					<Route path="/" element={<LandingPage />} />
-
-					{/* Login page */}
-					<Route path="/login" element={<LoginPage />} />
-
-					{/* Authenticated main UI */}
-					<Route path="/dashboard" element={<Dashboard />} />
-				</Routes>
-			</BrowserRouter>
-		</AuthProvider>
-	</StrictMode>
+    <StrictMode>
+        <AuthProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/signup" element={<SignupPage />} />
+                    <Route
+                        path="/dashboard"
+                        element={
+                            <ProtectedRoute>
+                                <Dashboard />
+                            </ProtectedRoute>
+                        }
+                    />
+                </Routes>
+            </BrowserRouter>
+        </AuthProvider>
+    </StrictMode>
 );
