@@ -220,7 +220,16 @@ export default function App() {
     return (
         <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6 space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-semibold">Your Week</h1>
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-bold text-zinc-50">
+                        TimeForge
+                    </h1>
+                    <p className="text-zinc-400 max-w-xl">
+                        Allocate your limited time across activities and
+                        priorities to build an clear, intentional weekly
+                        schedule.
+                    </p>
+                </div>
 
                 <button
                     className="text-sm text-red-400 hover:underline"
@@ -232,6 +241,17 @@ export default function App() {
                     Logout
                 </button>
             </div>
+
+            <Card className="bg-zinc-900 border-zinc-800">
+                <CardHeader>
+                    <CardTitle className="text-zinc-50">
+                        Weekly Availability
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="text-zinc-100">
+                    <WeeklyAvailabilityCard avail={avail} setAvail={setAvail} />
+                </CardContent>
+            </Card>
 
             <WeeklyTimeline />
 
