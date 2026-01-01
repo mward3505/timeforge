@@ -9,7 +9,7 @@ import { api } from "../api";
 import { useAuth } from "../context/AuthContext";
 import { Navigate, useNavigate } from "react-router-dom";
 import WeeklyAvailabilityCard from "@/components/dashboard/WeeklyAvailabilityCard";
-import WeeklyTimeline from "@/components/WeeklyTimeline";
+import WeeklyTimeline from "@/components/dashboard/WeeklyTimeline";
 
 type Activity = {
     id: number;
@@ -35,6 +35,7 @@ export default function App() {
         estimated_hours: 0,
         estimated_minutes: 30,
     });
+    const [selectedDay, setSelectedDay] = useState<number | null>(null);
     const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const [avail, setAvail] = useState(
         Array.from({ length: 7 }, (_, i) => ({
@@ -220,7 +221,16 @@ export default function App() {
     return (
         <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6 space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-semibold">Your Week</h1>
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-bold text-zinc-50">
+                        TimeForge
+                    </h1>
+                    <p className="text-zinc-400 max-w-xl">
+                        Allocate your limited time across activities and
+                        priorities to build an clear, intentional weekly
+                        schedule.
+                    </p>
+                </div>
 
                 <button
                     className="text-sm text-red-400 hover:underline"
@@ -233,11 +243,32 @@ export default function App() {
                 </button>
             </div>
 
-            <WeeklyTimeline />
+            <Card className="bg-zinc-900 border-zinc-800">
+                <CardHeader>
+                    <CardTitle className="text-zinc-50">
+                        Weekly Availability
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="text-zinc-100">
+                    <WeeklyAvailabilityCard avail={avail} setAvail={setAvail} />
+                </CardContent>
+            </Card>
+
+            <p className="text-sm text-zinc-400">
+                Click a day to block time, or click an exisiting block to edit
+                it.
+            </p>
+            <WeeklyTimeline avail={avail} onSelectDay={setSelectedDay} />
 
             <div className="pt-4">
-                <button className="px-4 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 border border-zinc-700">
-                    + Block Time
+                <button className="px-5 py-2 rounded-md bg-zinc-700 hover:bg-zinc-600 border border-zinc-600 font-medium">
+                    {selectedDay !== null
+                        ? `Block time for ${
+                              ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][
+                                  selectedDay
+                              ]
+                          }`
+                        : "+ Block Time"}
                 </button>
             </div>
         </div>
