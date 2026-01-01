@@ -9,7 +9,7 @@ import { api } from "../api";
 import { useAuth } from "../context/AuthContext";
 import { Navigate, useNavigate } from "react-router-dom";
 import WeeklyAvailabilityCard from "@/components/dashboard/WeeklyAvailabilityCard";
-import WeeklyTimeline from "@/components/WeeklyTimeline";
+import WeeklyTimeline from "@/components/dashboard/WeeklyTimeline";
 
 type Activity = {
     id: number;
@@ -35,6 +35,7 @@ export default function App() {
         estimated_hours: 0,
         estimated_minutes: 30,
     });
+    const [selectedDay, setSelectedDay] = useState<number | null>(null);
     const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const [avail, setAvail] = useState(
         Array.from({ length: 7 }, (_, i) => ({
@@ -253,11 +254,17 @@ export default function App() {
                 </CardContent>
             </Card>
 
-            <WeeklyTimeline />
+            <WeeklyTimeline avail={avail} onSelectDay={setSelectedDay} />
 
             <div className="pt-4">
                 <button className="px-4 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 border border-zinc-700">
-                    + Block Time
+                    {selectedDay !== null
+                        ? `Block time for ${
+                              ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][
+                                  selectedDay
+                              ]
+                          }`
+                        : "+ Block Time"}
                 </button>
             </div>
         </div>

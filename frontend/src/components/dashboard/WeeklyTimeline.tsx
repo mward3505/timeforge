@@ -36,6 +36,17 @@ const mockBlocks: TimeBlock[] = [
     },
 ];
 
+type AvailRow = {
+    day_of_week: number;
+    hours: number;
+    minutes: number;
+};
+
+type Props = {
+    avail: AvailRow[];
+    onSelectDay?: (dayIndex: number) => void;
+};
+
 function TimeBlockCard({ block }: { block: TimeBlock }) {
     return (
         <div className="rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2">
@@ -47,22 +58,43 @@ function TimeBlockCard({ block }: { block: TimeBlock }) {
     );
 }
 
-export default function WeeklyTimeline() {
+export default function WeeklyTimeline({ avail = [], onSelectDay }: Props) {
     return (
         <div className="space-y-3">
-            {DAYS.map((day) => {
+            {DAYS.map((day, index) => {
+                const availability = avail.find((a) => a.day_of_week === index);
+
+                const availableMinutes = availability
+                    ? availability.hours * 60 + availability.minutes
+                    : 0;
                 const blocksForDay = mockBlocks.filter((b) => b.day === day);
 
                 return (
                     <div key={day} className="flex items-start gap-4">
-                        <div className="w-12 pt-2 text-sm font-medium text-muted-foreground">
-                            {day}
+                        <div className="w-16 pt-1">
+                            <div className="text-sm font-medium text-zinc-300">
+                                {day}
+                            </div>
+                            <div className="text-xs text-zinc-500">
+                                {availableMinutes > 0
+                                    ? `${Math.floor(
+                                          availableMinutes / 60
+                                      )}h available`
+                                    : "No availability"}
+                            </div>
                         </div>
 
-                        <div className="flex-1 rounded-lg border p-2">
+                        <div
+                            onClick={() => onSelectDay?.(index)}
+                            className={`flex-1 rounded-lg border p-2 ${
+                                availableMinutes === 0
+                                    ? "border-zinc-800 bg-zinc-950"
+                                    : "border-zinc-700 bg-zinc-900"
+                            }`}
+                        >
                             {blocksForDay.length === 0 ? (
-                                <div className="px-2 py-2 text-sm text-muted-foreground">
-                                    —
+                                <div className="px-2 py-2 text-sm text-zinc-500 italic">
+                                    No time blocked
                                 </div>
                             ) : (
                                 <div className="space-y-2">
