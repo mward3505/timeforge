@@ -49,7 +49,7 @@ type Props = {
 
 function TimeBlockCard({ block }: { block: TimeBlock }) {
     return (
-        <div className="rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2">
+        <div className="rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 cursor-pointer hover:border-zinc-500">
             <div className="text-sm font-medium">{block.title}</div>
             <div className="text-xs text-muted-foreground">
                 {block.start} – {block.end}
@@ -77,9 +77,17 @@ export default function WeeklyTimeline({ avail = [], onSelectDay }: Props) {
                             </div>
                             <div className="text-xs text-zinc-500">
                                 {availableMinutes > 0
-                                    ? `${Math.floor(
-                                          availableMinutes / 60
-                                      )}h available`
+                                    ? (() => {
+                                          const h = Math.floor(
+                                              availableMinutes / 60
+                                          );
+                                          const m = availableMinutes % 60;
+
+                                          if (h > 0 && m > 0)
+                                              return `${h}h ${m}m available`;
+                                          if (h > 0) return `${h}h available`;
+                                          return `${m}m available`;
+                                      })()
                                     : "No availability"}
                             </div>
                         </div>
