@@ -80,3 +80,9 @@ class ScheduleSaveRequest(BaseModel):
     used_minutes: int
     day_of_week: int
     activities: List[ScheduleItem]
+
+class TimeBlockCreate(BaseModel):
+    day_of_week: int
+    start_minutes: int
+    duration_minutes: int
+    title: str
