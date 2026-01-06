@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import Base, engine
 from . import router
-from .routers import schedule, auth
+from .routers import schedule, auth, time_blocks
 
 Base.metadata.create_all(bind=engine)
 
@@ -29,3 +29,4 @@ def root():
 app.include_router(router.router)
 app.include_router(auth.router)
 app.include_router(schedule.router)
+app.include_router(time_blocks.router)

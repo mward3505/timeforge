@@ -1,5 +1,6 @@
 # app/models.py
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime
+from sqlalchemy.sql import func
 from .database import Base
 
 class User(Base):
@@ -35,3 +36,17 @@ class Schedule(Base):
     available_minutes = Column(Integer, nullable=False)
     used_minutes = Column(Integer, nullable=False)
     activities_json = Column(Text, nullable=False)  # store list of activities as JSON
+
+
+class TimeBlock(Base):
+    __tablename__ = "time_blocks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # if your user table is named differently, tell me
+
+    day_of_week = Column(Integer, nullable=False)  # 0–6
+    start_minutes = Column(Integer, nullable=False)
+    duration_minutes = Column(Integer, nullable=False)
+
+    title = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
