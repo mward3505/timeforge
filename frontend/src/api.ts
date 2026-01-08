@@ -18,3 +18,15 @@ export const saveSchedule = (schedule: any) =>
 
 export const loadScheďule = (userID: number) =>
     api.get(`/schedule/load?user_id=${userID}`);
+
+export async function getTimeBlocks() {
+    const res = await fetch("/time-blocks", {
+        credentials: "include",
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to load time blocks");
+    }
+
+    return res.json();
+}
