@@ -12,6 +12,7 @@ app = FastAPI(title="TimeForge API (MVP)")
 origins = [
     "http://localhost:5173",              # local Vite dev
     "https://timeforge-mvp.netlify.app", # deployed frontend
+    "https://timeforge-production.up.railway.app",
 ]
 
 app.add_middleware(
