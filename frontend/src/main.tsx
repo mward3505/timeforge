@@ -10,6 +10,7 @@ import LoginPage from "./pages/LoginPage.tsx";
 import { AuthProvider } from "./context/AuthContext.tsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.tsx";
 import SignupPage from "./pages/SignupPage.tsx";
+import Activities from "./pages/Activities.tsx";
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
@@ -24,6 +25,14 @@ createRoot(document.getElementById("root")!).render(
                         element={
                             <ProtectedRoute>
                                 <Dashboard />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/activities"
+                        element={
+                            <ProtectedRoute>
+                            <Activities />
                             </ProtectedRoute>
                         }
                     />
