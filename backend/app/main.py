@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import Base, engine
 from . import router
-from .routers import schedule, auth, time_blocks
+from .routers import schedule, auth, time_blocks, activities
 
 Base.metadata.create_all(bind=engine)
 
@@ -27,7 +27,7 @@ app.add_middleware(
 def root():
     return {"message": "Welcome to TimeForge API — MVP phase running!"}
 
-app.include_router(router.router)
 app.include_router(auth.router)
 app.include_router(schedule.router)
 app.include_router(time_blocks.router)
+app.include_router(activities.router)

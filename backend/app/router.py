@@ -16,20 +16,6 @@ def get_db():
     finally:
         db.close()
 
-@router.get("/activities", response_model=list[schemas.ActivityOut])
-def list_activities(current_user = Depends(get_current_user), db: Session = Depends(get_db),):
-    return db.query(models.Activity).filter(models.Activity.user_id == current_user.id).all()
-
-@router.post("/activities", response_model=schemas.ActivityOut)
-def create_activity(
-    payload: schemas.ActivityCreate, db: Session = Depends(get_db), 
-    current_user = Depends(get_current_user),):
-    a = models.Activity(user_id=current_user.id, **payload.dict())
-    db.add(a)
-    db.commit()
-    db.refresh(a)
-    return a
-
 @router.get("/availability", response_model=list[schemas.AvailabilityOut])
 def list_availability(db: Session = Depends(get_db), current_user = Depends(get_current_user),):
     return (
