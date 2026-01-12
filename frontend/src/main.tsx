@@ -11,31 +11,29 @@ import { AuthProvider } from "./context/AuthContext.tsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.tsx";
 import SignupPage from "./pages/SignupPage.tsx";
 import Activities from "./pages/Activities.tsx";
+import AppLayout from "./components/layout/AppLayout.tsx";
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
         <AuthProvider>
             <BrowserRouter>
                 <Routes>
+                    {/* Public routes */}
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignupPage />} />
+
+                    {/* Protected app layout */}
                     <Route
-                        path="/dashboard"
                         element={
                             <ProtectedRoute>
-                                <Dashboard />
+                                <AppLayout />
                             </ProtectedRoute>
                         }
-                    />
-                    <Route
-                        path="/activities"
-                        element={
-                            <ProtectedRoute>
-                            <Activities />
-                            </ProtectedRoute>
-                        }
-                    />
+                    >
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/activities" element={<Activities />} />
+                    </Route>
                 </Routes>
             </BrowserRouter>
         </AuthProvider>

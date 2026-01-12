@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
+    Card,
+    CardHeader,
+    CardTitle,
+    CardContent,
 } from "../components/ui/card";
 import { api, getTimeBlocks } from "../api";
 import { useAuth } from "../context/AuthContext";
@@ -12,214 +12,203 @@ import WeeklyAvailabilityCard from "@/components/dashboard/WeeklyAvailabilityCar
 import WeeklyTimeline from "@/components/dashboard/WeeklyTimeline";
 
 type Activity = {
-  id: number;
-  name: string;
-  tier: string;
-  priority: string;
-  estimated_minutes: number;
+    id: number;
+    name: string;
+    tier: string;
+    priority: string;
+    estimated_minutes: number;
 };
 
 type AvailabilityRow = {
-  id: number;
-  day_of_week: number;
-  available_minutes: number;
+    id: number;
+    day_of_week: number;
+    available_minutes: number;
 };
 
 export default function Dashboard() {
-  const { user, loading: authLoading, logout } = useAuth();
-  const navigate = useNavigate();
+    const { user, loading: authLoading, logout } = useAuth();
+    const navigate = useNavigate();
 
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [timeBlocks, setTimeBlocks] = useState<any[]>([]);
-  const [blocksLoading, setBlocksLoading] = useState<boolean>(true);
+    const [activities, setActivities] = useState<Activity[]>([]);
+    const [timeBlocks, setTimeBlocks] = useState<any[]>([]);
+    const [blocksLoading, setBlocksLoading] = useState<boolean>(true);
 
-  const [schedule, setSchedule] = useState<any | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [lastGenerated, setLastGenerated] = useState<string | null>(null);
+    const [schedule, setSchedule] = useState<any | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [successMsg, setSuccessMsg] = useState<string | null>(null);
+    const [lastGenerated, setLastGenerated] = useState<string | null>(null);
 
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+    const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
-  const [avail, setAvail] = useState(
-    Array.from({ length: 7 }, (_, i) => ({
-      day_of_week: i,
-      hours: 0,
-      minutes: 0,
-    }))
-  );
+    const [avail, setAvail] = useState(
+        Array.from({ length: 7 }, (_, i) => ({
+            day_of_week: i,
+            hours: 0,
+            minutes: 0,
+        }))
+    );
 
-  // ✅ Boot loader: only runs AFTER auth is ready
-  useEffect(() => {
-    if (authLoading || !user) return;
+    // ✅ Boot loader: only runs AFTER auth is ready
+    useEffect(() => {
+        if (authLoading || !user) return;
 
-    const boot = async () => {
-      setError(null);
-      setBlocksLoading(true);
+        const boot = async () => {
+            setError(null);
+            setBlocksLoading(true);
 
-      // 1) Load time blocks (safe array)
-      try {
-        const blocks = await getTimeBlocks();
-        setTimeBlocks(Array.isArray(blocks) ? blocks : []);
-      } catch (err) {
-        console.error("Failed to load time blocks", err);
-        setTimeBlocks([]);
-      } finally {
-        setBlocksLoading(false);
-      }
+            // 1) Load time blocks (safe array)
+            try {
+                const blocks = await getTimeBlocks();
+                setTimeBlocks(Array.isArray(blocks) ? blocks : []);
+            } catch (err) {
+                console.error("Failed to load time blocks", err);
+                setTimeBlocks([]);
+            } finally {
+                setBlocksLoading(false);
+            }
 
-      // 2) Load activities (safe array)
-      try {
-        const actRes = await api.get("/activities");
-        setActivities(Array.isArray(actRes.data) ? actRes.data : []);
-      } catch (err) {
-        console.error("Failed to load activities", err);
-        setActivities([]);
-      }
+            // 2) Load activities (safe array)
+            try {
+                const actRes = await api.get("/activities");
+                setActivities(Array.isArray(actRes.data) ? actRes.data : []);
+            } catch (err) {
+                console.error("Failed to load activities", err);
+                setActivities([]);
+            }
 
-      // 3) Load availability (safe array)
-      try {
-        const availRes = await api.get("/availability");
-        const rows: AvailabilityRow[] = Array.isArray(availRes.data)
-          ? availRes.data
-          : [];
+            // 3) Load availability (safe array)
+            try {
+                const availRes = await api.get("/availability");
+                const rows: AvailabilityRow[] = Array.isArray(availRes.data)
+                    ? availRes.data
+                    : [];
 
-        const byDay = new Map<number, number>(
-          rows.map((r) => [r.day_of_week, r.available_minutes])
-        );
+                const byDay = new Map<number, number>(
+                    rows.map((r) => [r.day_of_week, r.available_minutes])
+                );
 
-        setAvail((prev) =>
-          prev.map((x) => {
-            const total = byDay.get(x.day_of_week) ?? 0;
-            return {
-              ...x,
-              hours: Math.floor(total / 60),
-              minutes: total % 60,
-            };
-          })
-        );
-      } catch (err) {
-        console.error("Failed to load availability", err);
-        // keep default 0s
-      }
+                setAvail((prev) =>
+                    prev.map((x) => {
+                        const total = byDay.get(x.day_of_week) ?? 0;
+                        return {
+                            ...x,
+                            hours: Math.floor(total / 60),
+                            minutes: total % 60,
+                        };
+                    })
+                );
+            } catch (err) {
+                console.error("Failed to load availability", err);
+                // keep default 0s
+            }
+        };
+
+        boot();
+    }, [authLoading, user]);
+
+    // ---- helpers ----
+    const formatMinutes = (mins: number) => {
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        return h > 0 ? `${h}h ${m}m` : `${m}m`;
     };
 
-    boot();
-  }, [authLoading, user]);
+    // Save/Load schedule handlers (keeping your existing behavior)
+    const handleSaveSchedule = async () => {
+        if (!schedule) return;
+        try {
+            await api.post("/schedule/save", schedule);
+            setSuccessMsg("Schedule saved!");
+            setTimeout(() => setSuccessMsg(null), 2000);
+        } catch (err) {
+            console.error("Error saving schedule:", err);
+            setError("Failed to save schedule.");
+        }
+    };
 
-  // ---- helpers ----
-  const formatMinutes = (mins: number) => {
-    const h = Math.floor(mins / 60);
-    const m = mins % 60;
-    return h > 0 ? `${h}h ${m}m` : `${m}m`;
-  };
+    const handleLoadSchedule = async () => {
+        try {
+            const res = await api.get("/schedule/load");
+            setSchedule(res.data);
+            setSuccessMsg("Loaded last saved schedule!");
+            setTimeout(() => setSuccessMsg(null), 2000);
+        } catch (err) {
+            console.error("Error loading schedule:", err);
+            setError("Failed to load schedule.");
+        }
+    };
 
-  // Save/Load schedule handlers (keeping your existing behavior)
-  const handleSaveSchedule = async () => {
-    if (!schedule) return;
-    try {
-      await api.post("/schedule/save", schedule);
-      setSuccessMsg("Schedule saved!");
-      setTimeout(() => setSuccessMsg(null), 2000);
-    } catch (err) {
-      console.error("Error saving schedule:", err);
-      setError("Failed to save schedule.");
+    // ---- auth gates ----
+    if (authLoading) {
+        return <div className="text-zinc-400 p-6">Loading user...</div>;
     }
-  };
 
-  const handleLoadSchedule = async () => {
-    try {
-      const res = await api.get("/schedule/load");
-      setSchedule(res.data);
-      setSuccessMsg("Loaded last saved schedule!");
-      setTimeout(() => setSuccessMsg(null), 2000);
-    } catch (err) {
-      console.error("Error loading schedule:", err);
-      setError("Failed to load schedule.");
+    if (!user) {
+        return <Navigate to="/login" replace />;
     }
-  };
 
-  // ---- auth gates ----
-  if (authLoading) {
-    return <div className="text-zinc-400 p-6">Loading user...</div>;
-  }
+    return (
+        <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6 space-y-6">
+            {/* Page header */}
+            <div className="space-y-1">
+                <h2 className="text-2xl font-semibold text-zinc-100">
+                    Weekly Schedule
+                </h2>
+                <p className="text-zinc-400 max-w-2xl">
+                    Allocate your limited time across activities and priorities
+                    to build a clear, intentional weekly schedule.
+                </p>
+            </div>
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+            <Card className="bg-zinc-900 border-zinc-800">
+                <CardHeader>
+                    <CardTitle className="text-zinc-50">
+                        Weekly Availability
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="text-zinc-100">
+                    <WeeklyAvailabilityCard avail={avail} setAvail={setAvail} />
+                </CardContent>
+            </Card>
 
-  return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold text-zinc-50">TimeForge</h1>
-          <p className="text-zinc-400 max-w-xl">
-            Allocate your limited time across activities and priorities to build
-            a clear, intentional weekly schedule.
-          </p>
-        </div>
+            <p className="text-sm text-zinc-400">
+                Click a day to block time, or click an existing block to edit
+                it.
+            </p>
 
-        <div className="flex items-center gap-4">
-          <Link
-            to="/activities"
-            className="px-4 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-sm"
-          >
-            Activities
-          </Link>
+            <WeeklyTimeline
+                avail={avail}
+                timeBlocks={Array.isArray(timeBlocks) ? timeBlocks : []}
+                loading={blocksLoading}
+                onSelectDay={setSelectedDay}
+            />
 
-          <button
-            className="text-sm text-red-400 hover:underline"
-            onClick={async () => {
-              await logout();
-              navigate("/login", { replace: true });
-            }}
-          >
-            Logout
-          </button>
-        </div>
-      </div>
+            <div className="pt-4">
+                <button className="px-5 py-2 rounded-md bg-zinc-700 hover:bg-zinc-600 border border-zinc-600 font-medium">
+                    {selectedDay !== null
+                        ? `Block time for ${
+                              ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][
+                                  selectedDay
+                              ]
+                          }`
+                        : "+ Block Time"}
+                </button>
+            </div>
 
-      <Card className="bg-zinc-900 border-zinc-800">
-        <CardHeader>
-          <CardTitle className="text-zinc-50">Weekly Availability</CardTitle>
-        </CardHeader>
-        <CardContent className="text-zinc-100">
-          <WeeklyAvailabilityCard avail={avail} setAvail={setAvail} />
-        </CardContent>
-      </Card>
+            {/* Optional feedback area */}
+            {error && <p className="text-red-400">{error}</p>}
+            {successMsg && <p className="text-green-400">{successMsg}</p>}
+            {lastGenerated && (
+                <p className="text-zinc-400">
+                    Last generated at {lastGenerated}
+                </p>
+            )}
 
-      <p className="text-sm text-zinc-400">
-        Click a day to block time, or click an existing block to edit it.
-      </p>
-
-      <WeeklyTimeline
-        avail={avail}
-        timeBlocks={Array.isArray(timeBlocks) ? timeBlocks : []}
-        loading={blocksLoading}
-        onSelectDay={setSelectedDay}
-      />
-
-      <div className="pt-4">
-        <button className="px-5 py-2 rounded-md bg-zinc-700 hover:bg-zinc-600 border border-zinc-600 font-medium">
-          {selectedDay !== null
-            ? `Block time for ${
-                ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][selectedDay]
-              }`
-            : "+ Block Time"}
-        </button>
-      </div>
-
-      {/* Optional feedback area */}
-      {error && <p className="text-red-400">{error}</p>}
-      {successMsg && <p className="text-green-400">{successMsg}</p>}
-      {lastGenerated && (
-        <p className="text-zinc-400">Last generated at {lastGenerated}</p>
-      )}
-
-      {/* (Keeping schedule buttons if you wire them back into UI later) */}
-      {/* <button onClick={handleSaveSchedule}>Save</button>
+            {/* (Keeping schedule buttons if you wire them back into UI later) */}
+            {/* <button onClick={handleSaveSchedule}>Save</button>
       <button onClick={handleLoadSchedule}>Load</button> */}
-    </div>
-  );
+        </div>
+    );
 }
 
 // <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6 space-y-6">
