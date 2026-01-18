@@ -49,4 +49,19 @@ class TimeBlock(Base):
     duration_minutes = Column(Integer, nullable=False)
 
     title = Column(String, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+class ScheduleItem(Base):
+    __tablename__ = "schedule_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True, nullable=False)
+
+    activity_id = Column(
+        Integer,
+        ForeignKey("activities.id"),
+        nullable=False
+    )
+
+    day_of_week = Column(Integer, nullable=False)  # 0–6
+    start_minute = Column(Integer, nullable=False)
+    end_minute = Column(Integer, nullable=False)

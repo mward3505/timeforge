@@ -87,3 +87,16 @@ class TimeBlockCreate(BaseModel):
     start_minutes: int
     duration_minutes: int
     title: str
+
+class ScheduleItemCreate(BaseModel):
+    activity_id: int
+    day_of_week: int
+    start_minute: int
+    end_minute: int
+
+
+class ScheduleItemOut(ScheduleItemCreate):
+    id: int
+
+    class Config:
+        from_attributes = True
