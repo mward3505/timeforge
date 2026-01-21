@@ -34,3 +34,42 @@ export const getTimeBlocks = async () => {
   const res = await api.get("/time-blocks");
   return res.data;
 };
+
+// ===== Schedule Items =====
+
+// TypeScript type for schedule item from API
+export type ScheduleItem = {
+  id: number;
+  activity_id: number;
+  day_of_week: number;  // 0=Monday, 6=Sunday
+  start_minute: number;  // Minutes from midnight (cumulative for abstract budget)
+  end_minute: number;    // Minutes from midnight
+};
+
+// TypeScript type for creating new schedule item
+export type ScheduleItemCreate = {
+  activity_id: number;
+  day_of_week: number;
+  start_minute: number;
+  end_minute: number;
+};
+
+// Get all schedule items for current user
+export const listScheduleItems = () =>
+  api.get<ScheduleItem[]>("/schedule-items");
+
+// Create a new schedule item
+export const createScheduleItem = (item: ScheduleItemCreate) =>
+  api.post<ScheduleItem>("/schedule-items", item);
+
+// Delete a schedule item by ID
+export const deleteScheduleItem = (itemId: number) =>
+  api.delete(`/schedule-items/${itemId}`);
+
+// Generate schedule for today only
+export const generateTodaySchedule = () =>
+  api.post("/schedule/generate-today");
+
+// Generate schedule for entire week
+export const generateWeekSchedule = () =>
+  api.post("/schedule/generate-week");
