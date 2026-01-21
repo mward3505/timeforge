@@ -5,11 +5,17 @@ import {
     CardTitle,
     CardContent,
 } from "../components/ui/card";
-import { api, getTimeBlocks } from "../api";
+import {
+    api,
+    listScheduleItems,
+    generateTodaySchedule,
+    generateWeekSchedule,
+    deleteScheduleItem,
+    type ScheduleItem
+} from "../api";
 import { useAuth } from "../context/AuthContext";
-import { Navigate, useNavigate, Link } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import WeeklyAvailabilityCard from "@/components/dashboard/WeeklyAvailabilityCard";
-import WeeklyTimeline from "@/components/dashboard/WeeklyTimeline";
 
 type Activity = {
     id: number;
@@ -26,19 +32,12 @@ type AvailabilityRow = {
 };
 
 export default function Dashboard() {
-    const { user, loading: authLoading, logout } = useAuth();
-    const navigate = useNavigate();
+    const { user, loading: authLoading } = useAuth();
 
     const [activities, setActivities] = useState<Activity[]>([]);
-    const [timeBlocks, setTimeBlocks] = useState<any[]>([]);
-    const [blocksLoading, setBlocksLoading] = useState<boolean>(true);
-
-    const [schedule, setSchedule] = useState<any | null>(null);
+    const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
-    const [lastGenerated, setLastGenerated] = useState<string | null>(null);
-
-    const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
     const [avail, setAvail] = useState(
         Array.from({ length: 7 }, (_, i) => ({
@@ -48,32 +47,33 @@ export default function Dashboard() {
         }))
     );
 
+    // State for manual activity adding
+    const [addingToDayIndex, setAddingToDayIndex] = useState<number | null>(null);
+    const [selectedActivityId, setSelectedActivityId] = useState<number | null>(null);
+
     // ✅ Boot loader: only runs AFTER auth is ready
     useEffect(() => {
         if (authLoading || !user) return;
 
         const boot = async () => {
             setError(null);
-            setBlocksLoading(true);
 
-            // 1) Load time blocks (safe array)
-            try {
-                const blocks = await getTimeBlocks();
-                setTimeBlocks(Array.isArray(blocks) ? blocks : []);
-            } catch (err) {
-                console.error("Failed to load time blocks", err);
-                setTimeBlocks([]);
-            } finally {
-                setBlocksLoading(false);
-            }
-
-            // 2) Load activities (safe array)
+            // 1) Load activities (safe array)
             try {
                 const actRes = await api.get("/activities");
                 setActivities(Array.isArray(actRes.data) ? actRes.data : []);
             } catch (err) {
                 console.error("Failed to load activities", err);
                 setActivities([]);
+            }
+
+            // 2) Load schedule items (safe array)
+            try {
+                const schedRes = await listScheduleItems();
+                setScheduleItems(Array.isArray(schedRes.data) ? schedRes.data : []);
+            } catch (err) {
+                console.error("Failed to load schedule items", err);
+                setScheduleItems([]);
             }
 
             // 3) Load availability (safe array)
@@ -97,8 +97,11 @@ export default function Dashboard() {
                         };
                     })
                 );
-            } catch (err) {
-                console.error("Failed to load availability", err);
+            } catch (err: any) {
+                // 404 is normal on first use - no availability set yet
+                if (err.response?.status !== 404) {
+                    console.error("Failed to load availability", err);
+                }
                 // keep default 0s
             }
         };
@@ -113,28 +116,166 @@ export default function Dashboard() {
         return h > 0 ? `${h}h ${m}m` : `${m}m`;
     };
 
-    // Save/Load schedule handlers (keeping your existing behavior)
-    const handleSaveSchedule = async () => {
-        if (!schedule) return;
+    // Group schedule items by day and enrich with activity data
+    const getScheduleByDay = (dayOfWeek: number) => {
+        return scheduleItems
+            .filter(item => item.day_of_week === dayOfWeek)
+            .map(item => {
+                const activity = activities.find(a => a.id === item.activity_id);
+                return {
+                    scheduleItemId: item.id,
+                    activityId: item.activity_id,
+                    name: activity?.name || "Unknown Activity",
+                    tier: activity?.tier || "Free Play",
+                    priority: activity?.priority || "Low",
+                    duration: item.end_minute - item.start_minute,
+                };
+            });
+    };
+
+    // Calculate used time for a specific day
+    const getUsedMinutes = (dayOfWeek: number) => {
+        return scheduleItems
+            .filter(item => item.day_of_week === dayOfWeek)
+            .reduce((sum, item) => sum + (item.end_minute - item.start_minute), 0);
+    };
+
+    // Generate schedule for today
+    const handleGenerateToday = async () => {
         try {
-            await api.post("/schedule/save", schedule);
-            setSuccessMsg("Schedule saved!");
-            setTimeout(() => setSuccessMsg(null), 2000);
-        } catch (err) {
-            console.error("Error saving schedule:", err);
-            setError("Failed to save schedule.");
+            setError(null);
+            await generateTodaySchedule();
+
+            // Reload schedule items to show the generated schedule
+            const schedRes = await listScheduleItems();
+            setScheduleItems(Array.isArray(schedRes.data) ? schedRes.data : []);
+
+            setSuccessMsg("Today's schedule generated!");
+            setTimeout(() => setSuccessMsg(null), 3000);
+        } catch (err: any) {
+            console.error("Error generating today's schedule:", err);
+            setError(err.response?.data?.detail || "Failed to generate schedule. Make sure you have set your availability and created activities.");
         }
     };
 
-    const handleLoadSchedule = async () => {
+    // Generate schedule for entire week
+    const handleGenerateWeek = async () => {
         try {
-            const res = await api.get("/schedule/load");
-            setSchedule(res.data);
-            setSuccessMsg("Loaded last saved schedule!");
+            setError(null);
+            await generateWeekSchedule();
+
+            // Reload schedule items to show the generated schedule
+            const schedRes = await listScheduleItems();
+            setScheduleItems(Array.isArray(schedRes.data) ? schedRes.data : []);
+
+            setSuccessMsg("Weekly schedule generated!");
+            setTimeout(() => setSuccessMsg(null), 3000);
+        } catch (err: any) {
+            console.error("Error generating weekly schedule:", err);
+            setError(err.response?.data?.detail || "Failed to generate schedule. Make sure you have set your availability and created activities.");
+        }
+    };
+
+    // Delete activity from schedule
+    const handleDeleteScheduleItem = async (itemId: number) => {
+        try {
+            await deleteScheduleItem(itemId);
+
+            // Remove from local state
+            setScheduleItems(prev => prev.filter(item => item.id !== itemId));
+
+            setSuccessMsg("Activity removed from schedule!");
             setTimeout(() => setSuccessMsg(null), 2000);
         } catch (err) {
-            console.error("Error loading schedule:", err);
-            setError("Failed to load schedule.");
+            console.error("Error deleting schedule item:", err);
+            setError("Failed to remove activity.");
+        }
+    };
+
+    // Save availability
+    const handleSaveAvailability = async () => {
+        try {
+            setError(null);
+            const payload = avail.map((a) => ({
+                day_of_week: a.day_of_week,
+                available_minutes: a.hours * 60 + a.minutes,
+            }));
+
+            console.log("Saving availability:", payload);
+            const response = await api.post("/availability", payload);
+            console.log("Save response:", response);
+
+            setSuccessMsg("Availability saved!");
+            setTimeout(() => setSuccessMsg(null), 2000);
+        } catch (err: any) {
+            console.error("Error saving availability:", err);
+            console.error("Error response:", err.response?.data);
+            setError(err.response?.data?.detail || "Failed to save availability. Please make sure you're logged in.");
+        }
+    };
+
+    // Clear all scheduled activities
+    const handleClearSchedule = async () => {
+        if (!confirm("Are you sure you want to clear all scheduled activities? This cannot be undone.")) {
+            return;
+        }
+
+        try {
+            setError(null);
+
+            // Delete all schedule items
+            const deletePromises = scheduleItems.map(item => deleteScheduleItem(item.id));
+            await Promise.all(deletePromises);
+
+            // Clear local state
+            setScheduleItems([]);
+
+            setSuccessMsg("Schedule cleared!");
+            setTimeout(() => setSuccessMsg(null), 2000);
+        } catch (err: any) {
+            console.error("Error clearing schedule:", err);
+            setError("Failed to clear schedule.");
+        }
+    };
+
+    // Add activity manually to a specific day
+    const handleAddActivity = async (dayOfWeek: number, activityId: number) => {
+        try {
+            setError(null);
+
+            // Find the selected activity to get its duration
+            const activity = activities.find(a => a.id === activityId);
+            if (!activity) {
+                setError("Activity not found");
+                return;
+            }
+
+            // Calculate start_minute as the cumulative time already used on this day
+            const usedMinutes = getUsedMinutes(dayOfWeek);
+
+            // Create the schedule item with cumulative time tracking
+            const newItem = {
+                activity_id: activityId,
+                day_of_week: dayOfWeek,
+                start_minute: usedMinutes,  // Start where previous activities ended
+                end_minute: usedMinutes + activity.estimated_minutes  // Add duration
+            };
+
+            // Call API to create schedule item
+            const response = await api.post<ScheduleItem>("/schedule-items", newItem);
+
+            // Add to local state so UI updates immediately
+            setScheduleItems(prev => [...prev, response.data]);
+
+            // Close the modal and reset selection
+            setAddingToDayIndex(null);
+            setSelectedActivityId(null);
+
+            setSuccessMsg("Activity added to schedule!");
+            setTimeout(() => setSuccessMsg(null), 2000);
+        } catch (err: any) {
+            console.error("Error adding activity:", err);
+            setError(err.response?.data?.detail || "Failed to add activity.");
         }
     };
 
@@ -168,45 +309,171 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent className="text-zinc-100">
                     <WeeklyAvailabilityCard avail={avail} setAvail={setAvail} />
+                    <div className="mt-4">
+                        <button
+                            onClick={handleSaveAvailability}
+                            className="px-4 py-2 rounded-md bg-zinc-700 hover:bg-zinc-600 text-zinc-100 border border-zinc-600 font-medium transition"
+                        >
+                            Save Availability
+                        </button>
+                    </div>
                 </CardContent>
             </Card>
 
-            <p className="text-sm text-zinc-400">
-                Click a day to block time, or click an existing block to edit
-                it.
-            </p>
-
-            <WeeklyTimeline
-                avail={avail}
-                timeBlocks={Array.isArray(timeBlocks) ? timeBlocks : []}
-                loading={blocksLoading}
-                onSelectDay={setSelectedDay}
-            />
-
-            <div className="pt-4">
-                <button className="px-5 py-2 rounded-md bg-zinc-700 hover:bg-zinc-600 border border-zinc-600 font-medium">
-                    {selectedDay !== null
-                        ? `Block time for ${
-                              ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][
-                                  selectedDay
-                              ]
-                          }`
-                        : "+ Block Time"}
+            {/* Generate Schedule Buttons */}
+            <div className="flex items-center gap-3">
+                <button
+                    onClick={handleGenerateToday}
+                    className="px-5 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-medium transition"
+                >
+                    Generate Today
                 </button>
+                <button
+                    onClick={handleGenerateWeek}
+                    className="px-5 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition"
+                >
+                    Generate Full Week
+                </button>
+                {scheduleItems.length > 0 && (
+                    <button
+                        onClick={handleClearSchedule}
+                        className="px-5 py-2 rounded-md bg-red-600 hover:bg-red-500 text-white font-medium transition"
+                    >
+                        Clear Schedule
+                    </button>
+                )}
+                {scheduleItems.length > 0 && (
+                    <span className="text-sm text-zinc-400">
+                        {scheduleItems.length} activities scheduled
+                    </span>
+                )}
             </div>
 
-            {/* Optional feedback area */}
-            {error && <p className="text-red-400">{error}</p>}
-            {successMsg && <p className="text-green-400">{successMsg}</p>}
-            {lastGenerated && (
-                <p className="text-zinc-400">
-                    Last generated at {lastGenerated}
-                </p>
-            )}
+            {/* Scheduled Activities by Day - Calendar Style */}
+            <Card className="bg-zinc-900 border-zinc-800">
+                <CardHeader>
+                    <CardTitle className="text-zinc-50">
+                        Your Weekly Schedule
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="text-zinc-100">
+                    <div className="grid grid-cols-7 gap-3">
+                        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((dayName, dayIndex) => {
+                            const daySchedule = getScheduleByDay(dayIndex);
+                            const availableMinutes = avail.find(a => a.day_of_week === dayIndex);
+                            const totalAvailable = availableMinutes ? (availableMinutes.hours * 60 + availableMinutes.minutes) : 0;
+                            const usedMinutes = getUsedMinutes(dayIndex);
 
-            {/* (Keeping schedule buttons if you wire them back into UI later) */}
-            {/* <button onClick={handleSaveSchedule}>Save</button>
-      <button onClick={handleLoadSchedule}>Load</button> */}
+                            return (
+                                <div key={dayIndex} className="border border-zinc-800 rounded-lg p-3 bg-zinc-900/50">
+                                    {/* Day header */}
+                                    <div className="mb-2 pb-2 border-b border-zinc-800">
+                                        <div className="font-semibold text-zinc-100 text-center">{dayName}</div>
+                                        {totalAvailable > 0 && (
+                                            <div className="text-xs text-zinc-500 text-center mt-1">
+                                                {formatMinutes(usedMinutes)} / {formatMinutes(totalAvailable)}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Activities for this day */}
+                                    <div className="space-y-2 min-h-[100px]">
+                                        {daySchedule.length === 0 ? (
+                                            <div className="text-xs text-zinc-600 text-center py-4">No activities</div>
+                                        ) : (
+                                            daySchedule.map((item) => (
+                                                <div
+                                                    key={item.scheduleItemId}
+                                                    className={`p-2 rounded text-xs ${
+                                                        item.tier === "Main Quest" ? "bg-yellow-900/30 border border-yellow-800/50" :
+                                                        item.tier === "Side Quest" ? "bg-blue-900/30 border border-blue-800/50" :
+                                                        item.tier === "Bonus Round" ? "bg-purple-900/30 border border-purple-800/50" :
+                                                        "bg-zinc-800 border border-zinc-700"
+                                                    }`}
+                                                >
+                                                    <div className="font-medium text-zinc-100 mb-1 truncate" title={item.name}>
+                                                        {item.name}
+                                                    </div>
+                                                    <div className="text-zinc-400 text-xs">
+                                                        {formatMinutes(item.duration)}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteScheduleItem(item.scheduleItemId)}
+                                                        className="text-red-400 hover:text-red-300 text-xs mt-1"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            ))
+                                        )}
+
+                                        {/* Add Activity Button/Form */}
+                                        {addingToDayIndex === dayIndex ? (
+                                            // Show dropdown form when adding to this day
+                                            <div className="p-2 bg-zinc-800/50 border border-zinc-700 rounded space-y-2">
+                                                <select
+                                                    value={selectedActivityId || ""}
+                                                    onChange={(e) => setSelectedActivityId(Number(e.target.value))}
+                                                    className="w-full bg-zinc-800 text-zinc-100 border border-zinc-700 rounded px-2 py-1 text-xs"
+                                                >
+                                                    <option value="">Select activity...</option>
+                                                    {activities.map(activity => (
+                                                        <option key={activity.id} value={activity.id}>
+                                                            {activity.name} ({formatMinutes(activity.estimated_minutes)})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            if (selectedActivityId) {
+                                                                handleAddActivity(dayIndex, selectedActivityId);
+                                                            }
+                                                        }}
+                                                        disabled={!selectedActivityId}
+                                                        className="flex-1 px-2 py-1 bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white text-xs rounded transition"
+                                                    >
+                                                        Add
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setAddingToDayIndex(null);
+                                                            setSelectedActivityId(null);
+                                                        }}
+                                                        className="flex-1 px-2 py-1 bg-zinc-700 hover:bg-zinc-600 text-white text-xs rounded transition"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            // Show "+ Add Activity" button
+                                            <button
+                                                onClick={() => setAddingToDayIndex(dayIndex)}
+                                                className="w-full p-2 border border-dashed border-zinc-700 hover:border-zinc-600 rounded text-xs text-zinc-500 hover:text-zinc-400 transition"
+                                            >
+                                                + Add Activity
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Feedback messages */}
+            {error && (
+                <div className="bg-red-900/20 border border-red-800 text-red-300 px-4 py-3 rounded-lg">
+                    {error}
+                </div>
+            )}
+            {successMsg && (
+                <div className="bg-green-900/20 border border-green-800 text-green-300 px-4 py-3 rounded-lg">
+                    {successMsg}
+                </div>
+            )}
         </div>
     );
 }

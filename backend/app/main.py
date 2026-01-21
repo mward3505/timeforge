@@ -27,6 +27,7 @@ app.add_middleware(
 def root():
     return {"message": "Welcome to TimeForge API — MVP phase running!"}
 
+app.include_router(router.router)  # Includes /availability endpoints
 app.include_router(auth.router)
 app.include_router(schedule.router)
 app.include_router(time_blocks.router)
