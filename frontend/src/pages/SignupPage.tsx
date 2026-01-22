@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { api } from "../api";
+import { useAuth } from "../context/AuthContext";
 
 export default function SignupPage() {
     const navigate = useNavigate();
+    const { refreshUser } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -20,10 +23,19 @@ export default function SignupPage() {
             // After signup, log them in
             await api.post("/auth/login", { email, password });
 
-            navigate("/dashboard", { replace: true });
+            // Refresh user state so AuthContext knows they're logged in
+            await refreshUser();
+
+            // Show success message briefly
+            setSuccess(true);
+            setLoading(false);
+
+            // Navigate to dashboard after a brief delay
+            setTimeout(() => {
+                navigate("/dashboard", { replace: true });
+            }, 1000);
         } catch (err: any) {
             setError(err.response?.data?.detail || err.message || "Signup failed");
-        } finally {
             setLoading(false);
         }
     }
@@ -44,6 +56,7 @@ export default function SignupPage() {
                 <h1 className="text-2xl font-bold">Create account</h1>
 
                 {error && <p className="text-red-400 text-sm">{error}</p>}
+                {success && <p className="text-green-400 text-sm">Account created! Redirecting...</p>}
 
                 <input
                     className="w-full p-2 rounded bg-zinc-800 border border-zinc-700"
