@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { api } from "../api";
 
 export default function LoginPage() {
 	const navigate = useNavigate();
@@ -17,18 +18,7 @@ export default function LoginPage() {
 		setError("");
 
 		try {
-			const res = await fetch("http://localhost:8000/auth/login", {
-				method: "POST",
-				credentials: "include",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ email, password }),
-			});
-
-			if (!res.ok) {
-				throw new Error("Invalid login");
-			}
+			await api.post("/auth/login", { email, password });
 
 			await refreshUser();
 

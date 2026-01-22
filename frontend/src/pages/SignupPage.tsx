@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { api } from "../api";
 
 export default function SignupPage() {
     const navigate = useNavigate();
@@ -14,33 +15,14 @@ export default function SignupPage() {
         setLoading(true);
 
         try {
-            const res = await fetch("http://localhost:8000/auth/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.detail || "Signup failed");
-            }
+            await api.post("/auth/register", { email, password });
 
             // After signup, log them in
-            const loginRes = await fetch("http://localhost:8000/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (!loginRes.ok) {
-                throw new Error("Login after signup failed");
-            }
+            await api.post("/auth/login", { email, password });
 
             navigate("/dashboard", { replace: true });
         } catch (err: any) {
-            setError(err.message);
+            setError(err.response?.data?.detail || err.message || "Signup failed");
         } finally {
             setLoading(false);
         }
