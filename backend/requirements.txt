@@ -1,5 +1,6 @@
 annotated-types==0.7.0
 anyio==4.10.0
+bcrypt==4.1.2
 blinker==1.9.0
 click==8.1.8
 colorama==0.4.6
@@ -25,6 +26,7 @@ matplotlib==3.10.0
 numpy==2.2.1
 packaging==24.2
 pandas==2.2.3
+passlib==1.7.4
 pillow==11.1.0
 py4j==0.10.9.7
 pyasn1==0.6.1

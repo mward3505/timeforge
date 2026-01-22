@@ -45,6 +45,13 @@ export default function LoginPage() {
 				onSubmit={handleLogin}
 				className="bg-neutral-800 p-8 rounded-xl shadow-lg w-96"
 			>
+				<button
+					type="button"
+					onClick={() => navigate("/")}
+					className="mb-4 text-sm text-zinc-400 hover:text-zinc-200 flex items-center gap-1 transition"
+				>
+					← Back to Home
+				</button>
 				<h1 className="text-2xl font-bold mb-6 text-center">Log In</h1>
 
 				{error && (

@@ -52,6 +52,13 @@ export default function SignupPage() {
                 onSubmit={handleSubmit}
                 className="w-full max-w-sm space-y-4 bg-zinc-900 p-6 rounded-lg border border-zinc-800"
             >
+                <button
+                    type="button"
+                    onClick={() => navigate("/")}
+                    className="text-sm text-zinc-400 hover:text-zinc-200 flex items-center gap-1 transition"
+                >
+                    ← Back to Home
+                </button>
                 <h1 className="text-2xl font-bold">Create account</h1>
 
                 {error && <p className="text-red-400 text-sm">{error}</p>}
