@@ -250,15 +250,34 @@ export default function Dashboard() {
                 return;
             }
 
-            // Calculate start_minute as the cumulative time already used on this day
+            // Calculate time budget for this day
+            const availableMinutes = avail.find(a => a.day_of_week === dayOfWeek);
+            const totalAvailable = availableMinutes ? (availableMinutes.hours * 60 + availableMinutes.minutes) : 0;
             const usedMinutes = getUsedMinutes(dayOfWeek);
+            const activityDuration = activity.estimated_minutes;
 
+            // Warn user if adding this activity will exceed available time
+            if (usedMinutes + activityDuration > totalAvailable) {
+                const overageMinutes = (usedMinutes + activityDuration) - totalAvailable;
+                const dayName = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][dayOfWeek];
+
+                if (!confirm(
+                    `Adding "${activity.name}" will exceed your available time for ${dayName} by ${formatMinutes(overageMinutes)}.\n\nAdd anyway?`
+                )) {
+                    // User cancelled - close the form
+                    setAddingToDayIndex(null);
+                    setSelectedActivityId(null);
+                    return;
+                }
+            }
+
+            // Calculate start_minute as the cumulative time already used on this day
             // Create the schedule item with cumulative time tracking
             const newItem = {
                 activity_id: activityId,
                 day_of_week: dayOfWeek,
                 start_minute: usedMinutes,  // Start where previous activities ended
-                end_minute: usedMinutes + activity.estimated_minutes  // Add duration
+                end_minute: usedMinutes + activityDuration  // Add duration
             };
 
             // Call API to create schedule item
@@ -363,15 +382,30 @@ export default function Dashboard() {
                             const availableMinutes = avail.find(a => a.day_of_week === dayIndex);
                             const totalAvailable = availableMinutes ? (availableMinutes.hours * 60 + availableMinutes.minutes) : 0;
                             const usedMinutes = getUsedMinutes(dayIndex);
+                            const isOverBudget = totalAvailable > 0 && usedMinutes > totalAvailable;
+                            const overage = isOverBudget ? usedMinutes - totalAvailable : 0;
 
                             return (
-                                <div key={dayIndex} className="border border-zinc-800 rounded-lg p-3 bg-zinc-900/50">
+                                <div key={dayIndex} className={`border rounded-lg p-3 bg-zinc-900/50 ${
+                                    isOverBudget ? 'border-red-800' : 'border-zinc-800'
+                                }`}>
                                     {/* Day header */}
                                     <div className="mb-2 pb-2 border-b border-zinc-800">
                                         <div className="font-semibold text-zinc-100 text-center">{dayName}</div>
                                         {totalAvailable > 0 && (
-                                            <div className="text-xs text-zinc-500 text-center mt-1">
-                                                {formatMinutes(usedMinutes)} / {formatMinutes(totalAvailable)}
+                                            <div className={`text-xs text-center mt-1 ${
+                                                isOverBudget ? 'text-red-400 font-medium' : 'text-zinc-500'
+                                            }`}>
+                                                {isOverBudget ? (
+                                                    <>
+                                                        {formatMinutes(usedMinutes)} / {formatMinutes(totalAvailable)}
+                                                        <div className="text-xs text-red-400">
+                                                            ⚠️ {formatMinutes(overage)} over
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    `${formatMinutes(usedMinutes)} / ${formatMinutes(totalAvailable)}`
+                                                )}
                                             </div>
                                         )}
                                     </div>
