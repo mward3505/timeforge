@@ -1,4 +1,4 @@
-import React from "react";
+// React import not needed with newer React versions
 
 type AvailRow = {
 	day_of_week: number;

@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+// Removed unused Card imports - component doesn't use Card wrapper
 
 type AvailRow = {
     day_of_week: number;
