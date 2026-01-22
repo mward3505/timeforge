@@ -87,13 +87,13 @@ def login_user(
     
     access_token = create_access_token(data={"sub": str(user.id)})
 
-    # 🔥 Set secure cookie instead of returning token
+    # 🔥 Set secure cookie for cross-origin requests
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False,   # IMPORTANT: change to True in production
-        samesite="lax",
+        secure=True,    # Required for SameSite=None
+        samesite="none",  # Allows cross-site cookies (Netlify -> Render)
         max_age=60 * 60 * 24,  # 24 hours
     )
 
@@ -102,6 +102,11 @@ def login_user(
 @router.post("/logout")
 def logout():
     response = JSONResponse({"success": True})
-    response.delete_cookie("access_token", path="/")
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+        secure=True,
+        samesite="none"
+    )
 
     return response
