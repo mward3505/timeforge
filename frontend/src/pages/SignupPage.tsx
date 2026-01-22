@@ -2,10 +2,13 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function SignupPage() {
     const navigate = useNavigate();
     const { refreshUser } = useAuth();
+    const { t } = useTranslation();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
@@ -35,7 +38,7 @@ export default function SignupPage() {
                 navigate("/dashboard", { replace: true });
             }, 1000);
         } catch (err: any) {
-            setError(err.response?.data?.detail || err.message || "Signup failed");
+            setError(err.response?.data?.detail || err.message || t("auth.signupFailed"));
             setLoading(false);
         }
     }
@@ -46,21 +49,24 @@ export default function SignupPage() {
                 onSubmit={handleSubmit}
                 className="w-full max-w-sm space-y-4 bg-zinc-900 p-6 rounded-lg border border-zinc-800"
             >
-                <button
-                    type="button"
-                    onClick={() => navigate("/")}
-                    className="text-sm text-zinc-400 hover:text-zinc-200 flex items-center gap-1 transition"
-                >
-                    ← Back to Home
-                </button>
-                <h1 className="text-2xl font-bold">Create account</h1>
+                <div className="flex justify-between items-center">
+                    <button
+                        type="button"
+                        onClick={() => navigate("/")}
+                        className="text-sm text-zinc-400 hover:text-zinc-200 flex items-center gap-1 transition"
+                    >
+                        ← {t("auth.backToHome")}
+                    </button>
+                    <LanguageSwitcher />
+                </div>
+                <h1 className="text-2xl font-bold">{t("auth.createAccount")}</h1>
 
                 {error && <p className="text-red-400 text-sm">{error}</p>}
-                {success && <p className="text-green-400 text-sm">Account created! Redirecting...</p>}
+                {success && <p className="text-green-400 text-sm">{t("auth.accountCreated")}</p>}
 
                 <input
                     className="w-full p-2 rounded bg-zinc-800 border border-zinc-700"
-                    placeholder="Email"
+                    placeholder={t("auth.email")}
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -69,7 +75,7 @@ export default function SignupPage() {
 
                 <input
                     className="w-full p-2 rounded bg-zinc-800 border border-zinc-700"
-                    placeholder="Password"
+                    placeholder={t("auth.password")}
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -86,13 +92,13 @@ export default function SignupPage() {
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     )}
-                    {loading ? "Creating account..." : "Sign up"}
+                    {loading ? t("auth.creatingAccount") : t("auth.signup")}
                 </button>
 
                 <p className="text-sm text-zinc-400">
-                    Already have an account?{" "}
+                    {t("auth.alreadyHaveAccount")}{" "}
                     <Link to="/login" className="text-zinc-200 underline">
-                        Log in
+                        {t("auth.login")}
                     </Link>
                 </p>
             </form>

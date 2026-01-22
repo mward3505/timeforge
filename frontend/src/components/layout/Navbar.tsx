@@ -1,11 +1,14 @@
 // src/components/layout/Navbar.tsx
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../LanguageSwitcher";
 
 export default function Navbar() {
     const location = useLocation();
     const navigate = useNavigate();
     const { logout } = useAuth();
+    const { t } = useTranslation();
 
     const linkClass = (path: string) =>
         `px-3 py-2 rounded-md text-sm font-medium ${
@@ -23,11 +26,12 @@ export default function Navbar() {
 
                 <nav className="flex items-center gap-2">
                     <Link to="/dashboard" className={linkClass("/dashboard")}>
-                        Dashboard
+                        {t("navigation.dashboard")}
                     </Link>
                     <Link to="/activities" className={linkClass("/activities")}>
-                        Activities
+                        {t("navigation.activities")}
                     </Link>
+                    <LanguageSwitcher />
                     <button
                         onClick={async () => {
                             await logout();
@@ -35,7 +39,7 @@ export default function Navbar() {
                         }}
                         className="ml-3 text-sm text-red-400 hover:text-red-300"
                     >
-                        Logout
+                        {t("auth.logout")}
                     </button>
                 </nav>
             </div>

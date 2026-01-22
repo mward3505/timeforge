@@ -2,10 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../api";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function LoginPage() {
 	const navigate = useNavigate();
-
+	const { t } = useTranslation();
 	const { refreshUser } = useAuth();
 
 	const [email, setEmail] = useState("");
@@ -27,7 +29,7 @@ export default function LoginPage() {
 			// Go to dashboard
 			navigate("/dashboard");
 		} catch (err) {
-			setError("Login failed. Check email and password.");
+			setError(t("auth.loginFailed"));
 			setLoading(false);
 		}
 	}
@@ -38,14 +40,17 @@ export default function LoginPage() {
 				onSubmit={handleLogin}
 				className="bg-neutral-800 p-8 rounded-xl shadow-lg w-96"
 			>
-				<button
-					type="button"
-					onClick={() => navigate("/")}
-					className="mb-4 text-sm text-zinc-400 hover:text-zinc-200 flex items-center gap-1 transition"
-				>
-					← Back to Home
-				</button>
-				<h1 className="text-2xl font-bold mb-6 text-center">Log In</h1>
+				<div className="flex justify-between items-center mb-4">
+					<button
+						type="button"
+						onClick={() => navigate("/")}
+						className="text-sm text-zinc-400 hover:text-zinc-200 flex items-center gap-1 transition"
+					>
+						← {t("auth.backToHome")}
+					</button>
+					<LanguageSwitcher />
+				</div>
+				<h1 className="text-2xl font-bold mb-6 text-center">{t("auth.login")}</h1>
 
 				{error && (
 					<div className="mb-4 text-red-400 text-sm">{error}</div>
@@ -53,7 +58,7 @@ export default function LoginPage() {
 
 				<input
 					className="w-full mb-3 p-3 rounded bg-neutral-700 focus:outline-none"
-					placeholder="Email"
+					placeholder={t("auth.email")}
 					type="email"
 					value={email}
 					onChange={(e) => setEmail(e.target.value)}
@@ -61,7 +66,7 @@ export default function LoginPage() {
 
 				<input
 					className="w-full mb-6 p-3 rounded bg-neutral-700 focus:outline-none"
-					placeholder="Password"
+					placeholder={t("auth.password")}
 					type="password"
 					value={password}
 					onChange={(e) => setPassword(e.target.value)}
@@ -78,7 +83,7 @@ export default function LoginPage() {
 							<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
 						</svg>
 					)}
-					{loading ? "Logging in..." : "Log In"}
+					{loading ? t("auth.loggingIn") : t("auth.login")}
 				</button>
 			</form>
 		</div>
