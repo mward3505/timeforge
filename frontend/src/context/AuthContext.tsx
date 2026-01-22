@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { api } from "../api";
 
 interface User {
     id: number;
@@ -21,26 +22,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async function refreshUser() {
         setLoading(true);
         try {
-            const res = await fetch("http://localhost:8000/auth/me", {
-                credentials: "include",
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                setUser(data);
-            } else {
-                setUser(null);
-            }
+            const res = await api.get("/auth/me");
+            setUser(res.data);
+        } catch (err) {
+            setUser(null);
         } finally {
             setLoading(false);
         }
     }
 
     async function logout() {
-        await fetch("http://localhost:8000/auth/logout", {
-            method: "POST",
-            credentials: "include",
-        });
+        try {
+            await api.post("/auth/logout");
+        } catch (err) {
+            console.error("Logout error:", err);
+        }
         setUser(null);
     }
 
