@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Depends
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from datetime import datetime
+from typing import Optional
 import json
 
 from .. import models
@@ -12,13 +13,16 @@ router = APIRouter()
 
 @router.post("/schedule/generate-today")
 def generate_today_schedule(
+    day_of_week: Optional[int] = Query(default=None),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    """Generate schedule for today only"""
+    """Generate schedule for today only. Accepts optional day_of_week from frontend for timezone accuracy."""
 
-    today = datetime.now()
-    day_of_week = today.weekday()
+    # Use frontend-provided day if available (for timezone accuracy), otherwise use server time
+    if day_of_week is None:
+        today = datetime.now()
+        day_of_week = today.weekday()
     day_name = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][day_of_week]
 
     # Clear existing schedule items for today only

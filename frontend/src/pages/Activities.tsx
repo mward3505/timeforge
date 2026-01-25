@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { api } from "../api";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
 
 type Activity = {
     id: number;
@@ -10,8 +11,29 @@ type Activity = {
     estimated_minutes: number;
 };
 
+// Helper to translate tier/priority values from database
+function translateTier(tier: string, t: (key: string) => string): string {
+    const tierMap: Record<string, string> = {
+        "Main Quest": t("tiers.mainQuest"),
+        "Side Quest": t("tiers.sideQuest"),
+        "Bonus Round": t("tiers.bonusRound"),
+        "Free Play": t("tiers.freePlay"),
+    };
+    return tierMap[tier] || tier;
+}
+
+function translatePriority(priority: string, t: (key: string) => string): string {
+    const priorityMap: Record<string, string> = {
+        "High": t("priority.high"),
+        "Medium": t("priority.medium"),
+        "Low": t("priority.low"),
+    };
+    return priorityMap[priority] || priority;
+}
+
 export default function Activities() {
     const { user, loading } = useAuth();
+    const { t } = useTranslation();
 
     const [activities, setActivities] = useState<Activity[]>([]);
     const [showModal, setShowModal] = useState(false);
@@ -57,7 +79,7 @@ export default function Activities() {
     };
 
     if (loading) {
-        return <div className="text-zinc-400 p-6">Loading...</div>;
+        return <div className="text-zinc-400 p-6">{t("common.loading")}</div>;
     }
 
     return (
@@ -67,10 +89,10 @@ export default function Activities() {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-zinc-50">
-                            Activities
+                            {t("activities.title")}
                         </h1>
                         <p className="text-zinc-400">
-                            Define what you want to spend time on.
+                            {t("activities.description")}
                         </p>
                     </div>
 
@@ -81,15 +103,14 @@ export default function Activities() {
                         }}
                         className="px-5 py-2 rounded-md bg-zinc-700 hover:bg-zinc-600 border border-zinc-600 font-medium"
                     >
-                        + Add Activity
+                        {t("activities.addActivity")}
                     </button>
                 </div>
 
                 {/* Empty state */}
                 {activities.length === 0 && (
                     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-6 text-center text-zinc-400">
-                        No activities yet. Add your first activity to get
-                        started.
+                        {t("activities.emptyState")}
                     </div>
                 )}
 
@@ -105,7 +126,7 @@ export default function Activities() {
                                     {activity.name}
                                 </p>
                                 <p className="text-sm text-zinc-400">
-                                    {activity.tier} • {activity.priority} •{" "}
+                                    {translateTier(activity.tier, t)} • {translatePriority(activity.priority, t)} •{" "}
                                     {activity.estimated_minutes} min
                                 </p>
                             </div>
@@ -118,14 +139,14 @@ export default function Activities() {
                                     }}
                                     className="text-sm text-zinc-400 hover:text-zinc-100"
                                 >
-                                    Edit
+                                    {t("common.edit")}
                                 </button>
 
                                 <button
                                     onClick={() => deleteActivity(activity.id)}
                                     className="text-sm text-red-400 hover:text-red-300"
                                 >
-                                    Delete
+                                    {t("common.delete")}
                                 </button>
                             </div>
                         </li>
@@ -172,6 +193,7 @@ function AddActivityModal({
     onSave: (activity: Activity) => void;
     editing?: Activity | null;
 }) {
+    const { t } = useTranslation();
     const [name, setName] = useState(editing?.name ?? "");
     const [tier, setTier] = useState(editing?.tier ?? "Main Quest");
     const [priority, setPriority] = useState(editing?.priority ?? "Medium");
@@ -220,13 +242,13 @@ function AddActivityModal({
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
             <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 w-full max-w-md text-zinc-100">
                 <h2 className="text-lg font-semibold mb-4">
-                    {editing ? "Edit Activity" : "Add Activity"}
+                    {editing ? t("activities.editActivity") : t("activities.addActivity")}
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-sm mb-1 text-zinc-400">
-                            Name
+                            {t("activities.name")}
                         </label>
                         <input
                             className={inputClass}
@@ -238,38 +260,41 @@ function AddActivityModal({
 
                     <div>
                         <label className="block text-sm mb-1 text-zinc-400">
-                            Tier
+                            {t("activities.tier")}
                         </label>
                         <select
                             className={inputClass}
                             value={tier}
                             onChange={(e) => setTier(e.target.value)}
                         >
-                            <option>Main Quest</option>
-                            <option>Side Quest</option>
-                            <option>Bonus Round</option>
-                            <option>Free Play</option>
+                            <option value="Main Quest">{t("tiers.mainQuest")}</option>
+                            <option value="Side Quest">{t("tiers.sideQuest")}</option>
+                            <option value="Bonus Round">{t("tiers.bonusRound")}</option>
+                            <option value="Free Play">{t("tiers.freePlay")}</option>
                         </select>
                     </div>
 
                     <div>
                         <label className="block text-sm mb-1 text-zinc-400">
-                            Priority
+                            {t("activities.priority")}
                         </label>
                         <select
                             className={inputClass}
                             value={priority}
                             onChange={(e) => setPriority(e.target.value)}
                         >
-                            <option>High</option>
-                            <option>Medium</option>
-                            <option>Low</option>
+                            <option value="High">{t("priority.high")}</option>
+                            <option value="Medium">{t("priority.medium")}</option>
+                            <option value="Low">{t("priority.low")}</option>
                         </select>
+                        <p className="text-xs text-zinc-500 mt-1">
+                            {t("activities.priorityHint")}
+                        </p>
                     </div>
 
                     <div>
                         <label className="block text-sm mb-1 text-zinc-400">
-                            Estimated Minutes
+                            {t("activities.estimatedMinutes")}
                         </label>
                         <input
                             type="number"
@@ -289,13 +314,13 @@ function AddActivityModal({
                             onClick={onClose}
                             className="px-4 py-2 rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700"
                         >
-                            Cancel
+                            {t("common.cancel")}
                         </button>
                         <button
                             type="submit"
                             className="px-4 py-2 rounded-md bg-zinc-700 hover:bg-zinc-600 border border-zinc-600 font-medium"
                         >
-                            {editing ? "Save" : "Add"}
+                            {editing ? t("common.save") : t("common.add")}
                         </button>
                     </div>
                 </form>

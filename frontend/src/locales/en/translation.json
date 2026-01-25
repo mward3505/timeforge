@@ -1,0 +1,142 @@
+{
+  "app": {
+    "name": "TimeForge",
+    "tagline": "Smart scheduling made simple"
+  },
+  "auth": {
+    "login": "Log In",
+    "signup": "Sign up",
+    "logout": "Log out",
+    "email": "Email",
+    "password": "Password",
+    "createAccount": "Create account",
+    "loggingIn": "Logging in...",
+    "creatingAccount": "Creating account...",
+    "accountCreated": "Account created! Redirecting...",
+    "loginFailed": "Login failed. Check email and password.",
+    "signupFailed": "Signup failed",
+    "alreadyHaveAccount": "Already have an account?",
+    "backToHome": "Back to Home"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "activities": "Activities",
+    "schedules": "Schedules",
+    "employees": "Employees",
+    "availability": "Availability",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "overview": "Overview",
+    "recentActivity": "Recent Activity",
+    "upcomingShifts": "Upcoming Shifts",
+    "weeklySchedule": "Weekly Schedule",
+    "weeklyScheduleDesc": "Allocate your limited time across activities and priorities to build a clear, intentional weekly schedule.",
+    "weeklyAvailability": "Weekly Availability",
+    "saveAvailability": "Save Availability",
+    "generateToday": "Generate Today",
+    "generateTodayDesc": "fills today's schedule with your activities (highest tier/priority first) until your available time is full.",
+    "generateWeek": "Generate Full Week",
+    "generateWeekDesc": "does the same for all 7 days based on your weekly availability.",
+    "clearSchedule": "Clear Schedule",
+    "activitiesScheduled": "activities scheduled",
+    "yourWeeklySchedule": "Your Weekly Schedule",
+    "noActivities": "No activities",
+    "remove": "Remove",
+    "selectActivity": "Select activity...",
+    "addActivity": "+ Add Activity",
+    "loadingUser": "Loading user...",
+    "availabilitySaved": "Availability saved!",
+    "todayGenerated": "Today's schedule generated!",
+    "weekGenerated": "Weekly schedule generated!",
+    "scheduleCleared": "Schedule cleared!",
+    "activityRemoved": "Activity removed from schedule!",
+    "activityAdded": "Activity added to schedule!",
+    "clearScheduleConfirm": "Are you sure you want to clear all scheduled activities? This cannot be undone.",
+    "exceedTimeWarning": "will exceed your available time for",
+    "by": "by",
+    "addAnyway": "Add anyway?",
+    "over": "over",
+    "days": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    }
+  },
+  "activities": {
+    "title": "Activities",
+    "description": "Define what you want to spend time on.",
+    "addActivity": "+ Add Activity",
+    "editActivity": "Edit Activity",
+    "emptyState": "No activities yet. Add your first activity to get started.",
+    "name": "Name",
+    "tier": "Tier",
+    "priority": "Priority",
+    "estimatedMinutes": "Estimated Minutes",
+    "priorityHint": "Within each tier, higher priority activities are scheduled first."
+  },
+  "schedules": {
+    "title": "Schedules",
+    "createNew": "Create New Schedule",
+    "editSchedule": "Edit Schedule",
+    "deleteSchedule": "Delete Schedule",
+    "noSchedules": "No schedules yet",
+    "startDate": "Start Date",
+    "endDate": "End Date"
+  },
+  "employees": {
+    "title": "Employees",
+    "addEmployee": "Add Employee",
+    "editEmployee": "Edit Employee",
+    "deleteEmployee": "Delete Employee",
+    "noEmployees": "No employees yet",
+    "name": "Name",
+    "role": "Role",
+    "status": "Status"
+  },
+  "availability": {
+    "title": "Availability",
+    "setAvailability": "Set Availability",
+    "weekly": "Weekly Availability",
+    "noAvailability": "No availability set",
+    "saveSuccess": "Availability saved successfully",
+    "saveError": "Error saving availability"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "tiers": {
+    "label": "Tiers",
+    "mainQuest": "Main Quest",
+    "sideQuest": "Side Quest",
+    "bonusRound": "Bonus Round",
+    "freePlay": "Free Play"
+  },
+  "priority": {
+    "label": "Priority",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  }
+}

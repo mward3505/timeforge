@@ -16,6 +16,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
 import WeeklyAvailabilityCard from "@/components/dashboard/WeeklyAvailabilityCard";
+import { useTranslation } from "react-i18next";
 
 type Activity = {
     id: number;
@@ -33,6 +34,7 @@ type AvailabilityRow = {
 
 export default function Dashboard() {
     const { user, loading: authLoading } = useAuth();
+    const { t } = useTranslation();
 
     const [activities, setActivities] = useState<Activity[]>([]);
     const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
@@ -300,7 +302,7 @@ export default function Dashboard() {
 
     // ---- auth gates ----
     if (authLoading) {
-        return <div className="text-zinc-400 p-6">Loading user...</div>;
+        return <div className="text-zinc-400 p-6">{t("dashboard.loadingUser")}</div>;
     }
 
     if (!user) {
@@ -312,18 +314,17 @@ export default function Dashboard() {
             {/* Page header */}
             <div className="space-y-1">
                 <h2 className="text-2xl font-semibold text-zinc-100">
-                    Weekly Schedule
+                    {t("dashboard.weeklySchedule")}
                 </h2>
                 <p className="text-zinc-400 max-w-2xl">
-                    Allocate your limited time across activities and priorities
-                    to build a clear, intentional weekly schedule.
+                    {t("dashboard.weeklyScheduleDesc")}
                 </p>
             </div>
 
             <Card className="bg-zinc-900 border-zinc-800">
                 <CardHeader>
                     <CardTitle className="text-zinc-50">
-                        Weekly Availability
+                        {t("dashboard.weeklyAvailability")}
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="text-zinc-100">
@@ -333,51 +334,69 @@ export default function Dashboard() {
                             onClick={handleSaveAvailability}
                             className="px-4 py-2 rounded-md bg-zinc-700 hover:bg-zinc-600 text-zinc-100 border border-zinc-600 font-medium transition"
                         >
-                            Save Availability
+                            {t("dashboard.saveAvailability")}
                         </button>
                     </div>
                 </CardContent>
             </Card>
 
             {/* Generate Schedule Buttons */}
-            <div className="flex items-center gap-3">
-                <button
-                    onClick={handleGenerateToday}
-                    className="px-5 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-medium transition"
-                >
-                    Generate Today
-                </button>
-                <button
-                    onClick={handleGenerateWeek}
-                    className="px-5 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition"
-                >
-                    Generate Full Week
-                </button>
-                {scheduleItems.length > 0 && (
+            <div className="space-y-3">
+                <div className="flex items-center gap-3">
                     <button
-                        onClick={handleClearSchedule}
-                        className="px-5 py-2 rounded-md bg-red-600 hover:bg-red-500 text-white font-medium transition"
+                        onClick={handleGenerateToday}
+                        className="px-5 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-medium transition"
+                        title={t("dashboard.generateTodayTooltip") || "Auto-fill today's column with activities based on your available time"}
                     >
-                        Clear Schedule
+                        {t("dashboard.generateToday")}
                     </button>
-                )}
-                {scheduleItems.length > 0 && (
-                    <span className="text-sm text-zinc-400">
-                        {scheduleItems.length} activities scheduled
-                    </span>
-                )}
+                    <button
+                        onClick={handleGenerateWeek}
+                        className="px-5 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition"
+                        title={t("dashboard.generateWeekTooltip") || "Auto-fill all days with activities based on your weekly availability"}
+                    >
+                        {t("dashboard.generateWeek")}
+                    </button>
+                    {scheduleItems.length > 0 && (
+                        <button
+                            onClick={handleClearSchedule}
+                            className="px-5 py-2 rounded-md bg-red-600 hover:bg-red-500 text-white font-medium transition"
+                        >
+                            {t("dashboard.clearSchedule")}
+                        </button>
+                    )}
+                    {scheduleItems.length > 0 && (
+                        <span className="text-sm text-zinc-400">
+                            {scheduleItems.length} {t("dashboard.activitiesScheduled")}
+                        </span>
+                    )}
+                </div>
+                <p className="text-sm text-zinc-500">
+                    <strong>{t("dashboard.generateToday")}</strong> {t("dashboard.generateTodayDesc")}
+                    <strong className="ml-2">{t("dashboard.generateWeek")}</strong> {t("dashboard.generateWeekDesc")}
+                </p>
             </div>
 
             {/* Scheduled Activities by Day - Calendar Style */}
             <Card className="bg-zinc-900 border-zinc-800">
                 <CardHeader>
-                    <CardTitle className="text-zinc-50">
-                        Your Weekly Schedule
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="text-zinc-50">
+                            {t("dashboard.yourWeeklySchedule")}
+                        </CardTitle>
+                        <div className="flex items-center gap-3 text-xs">
+                            <span className="text-zinc-400">{t("tiers.label")}:</span>
+                            <span className="px-2 py-1 rounded bg-yellow-900/30 border border-yellow-800/50 text-yellow-300">{t("tiers.mainQuest")}</span>
+                            <span className="px-2 py-1 rounded bg-blue-900/30 border border-blue-800/50 text-blue-300">{t("tiers.sideQuest")}</span>
+                            <span className="px-2 py-1 rounded bg-purple-900/30 border border-purple-800/50 text-purple-300">{t("tiers.bonusRound")}</span>
+                            <span className="px-2 py-1 rounded bg-zinc-800 border border-zinc-700 text-zinc-400">{t("tiers.freePlay")}</span>
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent className="text-zinc-100">
                     <div className="grid grid-cols-7 gap-3">
-                        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((dayName, dayIndex) => {
+                        {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((dayKey, dayIndex) => {
+                            const dayName = t(`dashboard.days.${dayKey}`);
                             const daySchedule = getScheduleByDay(dayIndex);
                             const availableMinutes = avail.find(a => a.day_of_week === dayIndex);
                             const totalAvailable = availableMinutes ? (availableMinutes.hours * 60 + availableMinutes.minutes) : 0;
@@ -413,7 +432,7 @@ export default function Dashboard() {
                                     {/* Activities for this day */}
                                     <div className="space-y-2 min-h-[100px]">
                                         {daySchedule.length === 0 ? (
-                                            <div className="text-xs text-zinc-600 text-center py-4">No activities</div>
+                                            <div className="text-xs text-zinc-600 text-center py-4">{t("dashboard.noActivities")}</div>
                                         ) : (
                                             daySchedule.map((item) => (
                                                 <div
@@ -428,14 +447,24 @@ export default function Dashboard() {
                                                     <div className="font-medium text-zinc-100 mb-1 truncate" title={item.name}>
                                                         {item.name}
                                                     </div>
-                                                    <div className="text-zinc-400 text-xs">
-                                                        {formatMinutes(item.duration)}
+                                                    <div className="flex items-center gap-2 text-xs mb-1">
+                                                        <span className={`px-1.5 py-0.5 rounded ${
+                                                            item.tier === "Main Quest" ? "bg-yellow-800/50 text-yellow-300" :
+                                                            item.tier === "Side Quest" ? "bg-blue-800/50 text-blue-300" :
+                                                            item.tier === "Bonus Round" ? "bg-purple-800/50 text-purple-300" :
+                                                            "bg-zinc-700 text-zinc-400"
+                                                        }`}>
+                                                            {item.tier}
+                                                        </span>
+                                                        <span className="text-zinc-400">
+                                                            {formatMinutes(item.duration)}
+                                                        </span>
                                                     </div>
                                                     <button
                                                         onClick={() => handleDeleteScheduleItem(item.scheduleItemId)}
                                                         className="text-red-400 hover:text-red-300 text-xs mt-1"
                                                     >
-                                                        Remove
+                                                        {t("dashboard.remove")}
                                                     </button>
                                                 </div>
                                             ))
@@ -450,7 +479,7 @@ export default function Dashboard() {
                                                     onChange={(e) => setSelectedActivityId(Number(e.target.value))}
                                                     className="w-full bg-zinc-800 text-zinc-100 border border-zinc-700 rounded px-2 py-1 text-xs"
                                                 >
-                                                    <option value="">Select activity...</option>
+                                                    <option value="">{t("dashboard.selectActivity")}</option>
                                                     {activities.map(activity => (
                                                         <option key={activity.id} value={activity.id}>
                                                             {activity.name} ({formatMinutes(activity.estimated_minutes)})
@@ -467,7 +496,7 @@ export default function Dashboard() {
                                                         disabled={!selectedActivityId}
                                                         className="flex-1 px-2 py-1 bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white text-xs rounded transition"
                                                     >
-                                                        Add
+                                                        {t("common.add")}
                                                     </button>
                                                     <button
                                                         onClick={() => {
@@ -476,7 +505,7 @@ export default function Dashboard() {
                                                         }}
                                                         className="flex-1 px-2 py-1 bg-zinc-700 hover:bg-zinc-600 text-white text-xs rounded transition"
                                                     >
-                                                        Cancel
+                                                        {t("common.cancel")}
                                                     </button>
                                                 </div>
                                             </div>
@@ -486,7 +515,7 @@ export default function Dashboard() {
                                                 onClick={() => setAddingToDayIndex(dayIndex)}
                                                 className="w-full p-2 border border-dashed border-zinc-700 hover:border-zinc-600 rounded text-xs text-zinc-500 hover:text-zinc-400 transition"
                                             >
-                                                + Add Activity
+                                                {t("dashboard.addActivity")}
                                             </button>
                                         )}
                                     </div>

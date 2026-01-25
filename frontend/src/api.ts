@@ -66,9 +66,14 @@ export const createScheduleItem = (item: ScheduleItemCreate) =>
 export const deleteScheduleItem = (itemId: number) =>
   api.delete(`/schedule-items/${itemId}`);
 
-// Generate schedule for today only
-export const generateTodaySchedule = () =>
-  api.post("/schedule/generate-today");
+// Generate schedule for today only (passes local day of week for timezone accuracy)
+export const generateTodaySchedule = () => {
+  // Get local day of week (JavaScript: 0=Sunday, Python expects 0=Monday)
+  const jsDay = new Date().getDay();
+  // Convert: JS Sunday(0) -> Python 6, JS Monday(1) -> Python 0, etc.
+  const pythonDay = jsDay === 0 ? 6 : jsDay - 1;
+  return api.post(`/schedule/generate-today?day_of_week=${pythonDay}`);
+};
 
 // Generate schedule for entire week
 export const generateWeekSchedule = () =>

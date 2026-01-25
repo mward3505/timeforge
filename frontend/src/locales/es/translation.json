@@ -1,0 +1,142 @@
+{
+  "app": {
+    "name": "TimeForge",
+    "tagline": "Programación inteligente hecha simple"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "signup": "Registrarse",
+    "logout": "Cerrar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "createAccount": "Crear cuenta",
+    "loggingIn": "Iniciando sesión...",
+    "creatingAccount": "Creando cuenta...",
+    "accountCreated": "¡Cuenta creada! Redirigiendo...",
+    "loginFailed": "Error de inicio de sesión. Verifica tu correo y contraseña.",
+    "signupFailed": "Error en el registro",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+    "backToHome": "Volver al inicio"
+  },
+  "navigation": {
+    "dashboard": "Panel",
+    "activities": "Actividades",
+    "schedules": "Horarios",
+    "employees": "Empleados",
+    "availability": "Disponibilidad",
+    "settings": "Configuración"
+  },
+  "dashboard": {
+    "welcome": "Bienvenido",
+    "overview": "Resumen",
+    "recentActivity": "Actividad reciente",
+    "upcomingShifts": "Próximos turnos",
+    "weeklySchedule": "Horario Semanal",
+    "weeklyScheduleDesc": "Asigna tu tiempo limitado entre actividades y prioridades para construir un horario semanal claro e intencional.",
+    "weeklyAvailability": "Disponibilidad Semanal",
+    "saveAvailability": "Guardar Disponibilidad",
+    "generateToday": "Generar Hoy",
+    "generateTodayDesc": "llena el horario de hoy con tus actividades (las de mayor nivel/prioridad primero) hasta completar tu tiempo disponible.",
+    "generateWeek": "Generar Semana Completa",
+    "generateWeekDesc": "hace lo mismo para los 7 días según tu disponibilidad semanal.",
+    "clearSchedule": "Limpiar Horario",
+    "activitiesScheduled": "actividades programadas",
+    "yourWeeklySchedule": "Tu Horario Semanal",
+    "noActivities": "Sin actividades",
+    "remove": "Eliminar",
+    "selectActivity": "Seleccionar actividad...",
+    "addActivity": "+ Agregar Actividad",
+    "loadingUser": "Cargando usuario...",
+    "availabilitySaved": "¡Disponibilidad guardada!",
+    "todayGenerated": "¡Horario de hoy generado!",
+    "weekGenerated": "¡Horario semanal generado!",
+    "scheduleCleared": "¡Horario limpiado!",
+    "activityRemoved": "¡Actividad eliminada del horario!",
+    "activityAdded": "¡Actividad agregada al horario!",
+    "clearScheduleConfirm": "¿Estás seguro de que deseas limpiar todas las actividades programadas? Esto no se puede deshacer.",
+    "exceedTimeWarning": "excederá tu tiempo disponible para",
+    "by": "por",
+    "addAnyway": "¿Agregar de todos modos?",
+    "over": "de más",
+    "days": {
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mié",
+      "thu": "Jue",
+      "fri": "Vie",
+      "sat": "Sáb",
+      "sun": "Dom",
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miércoles",
+      "thursday": "Jueves",
+      "friday": "Viernes",
+      "saturday": "Sábado",
+      "sunday": "Domingo"
+    }
+  },
+  "activities": {
+    "title": "Actividades",
+    "description": "Define en qué quieres invertir tu tiempo.",
+    "addActivity": "+ Agregar Actividad",
+    "editActivity": "Editar Actividad",
+    "emptyState": "No hay actividades todavía. Agrega tu primera actividad para comenzar.",
+    "name": "Nombre",
+    "tier": "Nivel",
+    "priority": "Prioridad",
+    "estimatedMinutes": "Minutos Estimados",
+    "priorityHint": "Dentro de cada nivel, las actividades de mayor prioridad se programan primero."
+  },
+  "schedules": {
+    "title": "Horarios",
+    "createNew": "Crear nuevo horario",
+    "editSchedule": "Editar horario",
+    "deleteSchedule": "Eliminar horario",
+    "noSchedules": "No hay horarios todavía",
+    "startDate": "Fecha de inicio",
+    "endDate": "Fecha de fin"
+  },
+  "employees": {
+    "title": "Empleados",
+    "addEmployee": "Agregar empleado",
+    "editEmployee": "Editar empleado",
+    "deleteEmployee": "Eliminar empleado",
+    "noEmployees": "No hay empleados todavía",
+    "name": "Nombre",
+    "role": "Rol",
+    "status": "Estado"
+  },
+  "availability": {
+    "title": "Disponibilidad",
+    "setAvailability": "Establecer disponibilidad",
+    "weekly": "Disponibilidad semanal",
+    "noAvailability": "No se ha establecido disponibilidad",
+    "saveSuccess": "Disponibilidad guardada exitosamente",
+    "saveError": "Error al guardar disponibilidad"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Agregar",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito"
+  },
+  "tiers": {
+    "label": "Niveles",
+    "mainQuest": "Misión Principal",
+    "sideQuest": "Misión Secundaria",
+    "bonusRound": "Ronda Extra",
+    "freePlay": "Juego Libre"
+  },
+  "priority": {
+    "label": "Prioridad",
+    "high": "Alta",
+    "medium": "Media",
+    "low": "Baja"
+  }
+}
