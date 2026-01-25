@@ -10,6 +10,7 @@ export default function LanguageSwitcher() {
   return (
     <div className="flex items-center gap-2">
       <button
+        type="button"
         onClick={() => changeLanguage('en')}
         className={`px-3 py-1 rounded text-sm transition ${
           i18n.language === 'en'
@@ -20,6 +21,7 @@ export default function LanguageSwitcher() {
         EN
       </button>
       <button
+        type="button"
         onClick={() => changeLanguage('es')}
         className={`px-3 py-1 rounded text-sm transition ${
           i18n.language === 'es'
