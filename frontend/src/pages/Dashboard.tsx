@@ -32,6 +32,17 @@ type AvailabilityRow = {
     available_minutes: number;
 };
 
+// Helper to translate tier values from database
+function translateTier(tier: string, t: (key: string) => string): string {
+    const tierMap: Record<string, string> = {
+        "Main Quest": t("tiers.mainQuest"),
+        "Side Quest": t("tiers.sideQuest"),
+        "Bonus Round": t("tiers.bonusRound"),
+        "Free Play": t("tiers.freePlay"),
+    };
+    return tierMap[tier] || tier;
+}
+
 export default function Dashboard() {
     const { user, loading: authLoading } = useAuth();
     const { t } = useTranslation();
@@ -454,7 +465,7 @@ export default function Dashboard() {
                                                             item.tier === "Bonus Round" ? "bg-purple-800/50 text-purple-300" :
                                                             "bg-zinc-700 text-zinc-400"
                                                         }`}>
-                                                            {item.tier}
+                                                            {translateTier(item.tier, t)}
                                                         </span>
                                                         <span className="text-zinc-400">
                                                             {formatMinutes(item.duration)}
