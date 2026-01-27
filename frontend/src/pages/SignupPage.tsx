@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../context/AuthContext";
@@ -14,6 +14,18 @@ export default function SignupPage() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [showColdStartMsg, setShowColdStartMsg] = useState(false);
+
+    // Show cold start message after 3 seconds of loading
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (loading) {
+            timer = setTimeout(() => setShowColdStartMsg(true), 3000);
+        } else {
+            setShowColdStartMsg(false);
+        }
+        return () => clearTimeout(timer);
+    }, [loading]);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -94,6 +106,12 @@ export default function SignupPage() {
                     )}
                     {loading ? t("auth.creatingAccount") : t("auth.signup")}
                 </button>
+
+                {showColdStartMsg && (
+                    <p className="text-sm text-amber-400 text-center">
+                        {t("auth.coldStartMessage")}
+                    </p>
+                )}
 
                 <p className="text-sm text-zinc-400">
                     {t("auth.alreadyHaveAccount")}{" "}

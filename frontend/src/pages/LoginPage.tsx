@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../api";
@@ -14,6 +14,18 @@ export default function LoginPage() {
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
+	const [showColdStartMsg, setShowColdStartMsg] = useState(false);
+
+	// Show cold start message after 3 seconds of loading
+	useEffect(() => {
+		let timer: NodeJS.Timeout;
+		if (loading) {
+			timer = setTimeout(() => setShowColdStartMsg(true), 3000);
+		} else {
+			setShowColdStartMsg(false);
+		}
+		return () => clearTimeout(timer);
+	}, [loading]);
 
 	async function handleLogin(e: React.FormEvent) {
 		e.preventDefault();
@@ -85,6 +97,12 @@ export default function LoginPage() {
 					)}
 					{loading ? t("auth.loggingIn") : t("auth.login")}
 				</button>
+
+				{showColdStartMsg && (
+					<p className="text-sm text-amber-400 text-center mt-3">
+						{t("auth.coldStartMessage")}
+					</p>
+				)}
 			</form>
 		</div>
 	);

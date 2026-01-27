@@ -16,7 +16,8 @@
     "loginFailed": "Error de inicio de sesión. Verifica tu correo y contraseña.",
     "signupFailed": "Error en el registro",
     "alreadyHaveAccount": "¿Ya tienes una cuenta?",
-    "backToHome": "Volver al inicio"
+    "backToHome": "Volver al inicio",
+    "coldStartMessage": "El servidor está despertando... Esto puede tardar hasta 50 segundos en la primera visita."
   },
   "navigation": {
     "dashboard": "Panel",

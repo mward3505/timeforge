@@ -16,7 +16,8 @@
     "loginFailed": "Login failed. Check email and password.",
     "signupFailed": "Signup failed",
     "alreadyHaveAccount": "Already have an account?",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "coldStartMessage": "Server is waking up... This may take up to 50 seconds on first visit."
   },
   "navigation": {
     "dashboard": "Dashboard",
