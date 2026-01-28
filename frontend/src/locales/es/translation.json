@@ -24,7 +24,7 @@
     "sendResetLink": "Enviar Enlace",
     "sending": "Enviando...",
     "checkEmail": "Revisa Tu Correo",
-    "resetEmailSent": "Si existe una cuenta con ese correo, hemos enviado un enlace para restablecer la contraseña.",
+    "resetEmailSent": "Si existe una cuenta con ese correo, hemos enviado un enlace para restablecer la contraseña. Revisa tu carpeta de spam si no lo ves.",
     "backToLogin": "Volver al inicio de sesión",
     "resetPassword": "Restablecer Contraseña",
     "enterNewPassword": "Ingresa tu nueva contraseña.",

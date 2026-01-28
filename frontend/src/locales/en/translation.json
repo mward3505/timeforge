@@ -24,7 +24,7 @@
     "sendResetLink": "Send Reset Link",
     "sending": "Sending...",
     "checkEmail": "Check Your Email",
-    "resetEmailSent": "If an account exists with that email, we've sent a password reset link.",
+    "resetEmailSent": "If an account exists with that email, we've sent a password reset link. Check your spam folder if you don't see it.",
     "backToLogin": "Back to Login",
     "resetPassword": "Reset Password",
     "enterNewPassword": "Enter your new password below.",
