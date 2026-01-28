@@ -65,3 +65,13 @@ class ScheduleItem(Base):
     day_of_week = Column(Integer, nullable=False)  # 0–6
     start_minute = Column(Integer, nullable=False)
     end_minute = Column(Integer, nullable=False)
+
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    token = Column(String, unique=True, index=True, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    used = Column(Integer, default=0)  # 0 = unused, 1 = used

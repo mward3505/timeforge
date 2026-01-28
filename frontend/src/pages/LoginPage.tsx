@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../api";
 import { useTranslation } from "react-i18next";
@@ -77,12 +77,21 @@ export default function LoginPage() {
 				/>
 
 				<input
-					className="w-full mb-6 p-3 rounded bg-neutral-700 focus:outline-none"
+					className="w-full mb-2 p-3 rounded bg-neutral-700 focus:outline-none"
 					placeholder={t("auth.password")}
 					type="password"
 					value={password}
 					onChange={(e) => setPassword(e.target.value)}
 				/>
+
+				<div className="mb-4 text-right">
+					<Link
+						to="/forgot-password"
+						className="text-sm text-zinc-400 hover:text-zinc-200 transition"
+					>
+						{t("auth.forgotPassword")}
+					</Link>
+				</div>
 
 				<button
 					type="submit"
