@@ -54,7 +54,7 @@ TimeForge solves this by forcing you to confront your actual time budget. You de
 - Clean, modern UI built with Tailwind CSS and shadcn/ui
 
 ### 💾 Data Persistence
-- All data stored in SQLite database
+- All data stored in PostgreSQL database
 - Schedules, activities, and availability persist across sessions
 - Automatic data loading on page refresh
 
