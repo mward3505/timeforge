@@ -115,5 +115,9 @@ def delete_activity(
     if not activity:
         raise HTTPException(status_code=404, detail="Activity not found")
 
+    db.query(models.ScheduleItem).filter(
+        models.ScheduleItem.activity_id == activity_id
+    ).delete()
+
     db.delete(activity)
     db.commit()
