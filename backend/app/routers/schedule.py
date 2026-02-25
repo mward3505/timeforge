@@ -62,7 +62,7 @@ def generate_today_schedule(
             detail="No activities found. Please create some activities first."
         )
 
-    activities.sort(key=lambda a: (tier_order.get(a.tier, 99), priority_order.get(a.priority, 99)))
+    activities.sort(key=lambda a: (tier_order.get(a.tier, 99), priority_order.get(a.priority, 99), -a.estimated_minutes))
 
     used = 0
     scheduled_count = 0
@@ -120,7 +120,7 @@ def generate_week_schedule(
             detail="No activities found. Please create some activities first."
         )
 
-    activities.sort(key=lambda a: (tier_order.get(a.tier, 99), priority_order.get(a.priority, 99)))
+    activities.sort(key=lambda a: (tier_order.get(a.tier, 99), priority_order.get(a.priority, 99), -a.estimated_minutes))
 
     generated_days = []
 
@@ -195,7 +195,7 @@ def generate_schedule(db: Session = Depends(get_db), current_user: models.User =
         .filter_by(user_id=current_user.id)
         .all()
     )
-    activities.sort(key=lambda a: (tier_order.get(a.tier, 99), priority_order.get(a.priority, 99)))
+    activities.sort(key=lambda a: (tier_order.get(a.tier, 99), priority_order.get(a.priority, 99), -a.estimated_minutes))
 
     print(f"Loaded {len(activities)} activities: {[a.name for a in activities[:3]]}...")
 
